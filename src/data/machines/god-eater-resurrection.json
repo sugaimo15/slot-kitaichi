@@ -12,7 +12,13 @@
     "ceilingBonus": 350,
     "atAvgPayout": 350,
     "base": 31.0,
-    "resetOnBonus": true
+    "resetOnBonus": true,
+    "zones": [
+      { "game": 200, "label": "200ゾーン" },
+      { "game": 400, "label": "400ゾーン" },
+      { "game": 600, "label": "600ゾーン" },
+      { "game": 800, "label": "800ゾーン" }
+    ]
   },
   "settings": {
     "1": { "bb": -1, "rb": -1, "at": 352, "machineRatio": 97.9 },

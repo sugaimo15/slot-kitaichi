@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import { MachineWithEV } from "@/lib/types";
-import { calcHyenaEV, evColor } from "@/lib/ev";
+import { calcHyenaEV, calcZoneEVList, evColor } from "@/lib/ev";
 
 interface Props {
   machines: MachineWithEV[];
@@ -30,10 +30,16 @@ export default function HyenaCalculator({ machines }: Props) {
     return calcHyenaEV(machine, currentGame, setting, exchangeRate);
   }, [machine, currentGame, setting, exchangeRate]);
 
+  const zoneEVs = useMemo(() => {
+    if (!machine) return [];
+    return calcZoneEVList(machine, currentGame, exchangeRate);
+  }, [machine, currentGame, exchangeRate]);
+
   const evPositiveGame = result?.evPositiveGame;
   const ceiling = machine?.hyena?.ceiling ?? 1000;
   const base = machine?.hyena?.base ?? 50;
   const progressPct = Math.min((currentGame / ceiling) * 100, 100);
+  const zones = machine?.hyena?.zones ?? [];
 
   return (
     <div className="space-y-6">
@@ -136,18 +142,43 @@ export default function HyenaCalculator({ machines }: Props) {
             className="w-full accent-blue-600"
           />
 
-          <div className="mt-2 relative h-5 bg-slate-100 rounded-full overflow-hidden">
-            <div
-              className={`h-full rounded-full transition-all ${progressPct >= 80 ? "bg-red-500" : progressPct >= 50 ? "bg-orange-400" : "bg-blue-400"}`}
-              style={{ width: `${progressPct}%` }}
-            />
-            {evPositiveGame !== null && evPositiveGame !== undefined && (
+          {/* プログレスバー（ゾーン・EV+マーカー付き） */}
+          <div className="mt-2">
+            <div className="relative h-5 bg-slate-100 rounded-full overflow-hidden">
               <div
-                className="absolute top-0 h-full w-0.5 bg-green-500"
-                style={{ left: `${(evPositiveGame / ceiling) * 100}%` }}
+                className={`h-full rounded-full transition-all ${progressPct >= 80 ? "bg-red-500" : progressPct >= 50 ? "bg-orange-400" : "bg-blue-400"}`}
+                style={{ width: `${progressPct}%` }}
               />
+              {evPositiveGame !== null && evPositiveGame !== undefined && (
+                <div
+                  className="absolute top-0 h-full w-0.5 bg-green-500"
+                  style={{ left: `${(evPositiveGame / ceiling) * 100}%` }}
+                />
+              )}
+              {zones.map((z) => (
+                <div
+                  key={z.game}
+                  className="absolute top-0 h-full w-0.5 bg-yellow-400 opacity-90"
+                  style={{ left: `${(z.game / ceiling) * 100}%` }}
+                />
+              ))}
+            </div>
+            {/* ゾーンラベル */}
+            {zones.length > 0 && (
+              <div className="relative h-4 mt-0.5">
+                {zones.map((z) => (
+                  <span
+                    key={z.game}
+                    className="absolute text-[10px] text-yellow-600 font-medium -translate-x-1/2 leading-none"
+                    style={{ left: `${(z.game / ceiling) * 100}%` }}
+                  >
+                    {z.game}
+                  </span>
+                ))}
+              </div>
             )}
           </div>
+
           <div className="flex justify-between text-xs text-slate-400 mt-1">
             <span>0G</span>
             {evPositiveGame !== null && evPositiveGame !== undefined && (
@@ -155,6 +186,18 @@ export default function HyenaCalculator({ machines }: Props) {
             )}
             <span>天井 {ceiling}G</span>
           </div>
+          {zones.length > 0 && (
+            <div className="flex items-center gap-3 mt-1 text-[10px] text-slate-400">
+              <span className="flex items-center gap-1">
+                <span className="inline-block w-2.5 h-2.5 rounded-sm bg-yellow-400" />
+                ゾーン
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="inline-block w-2.5 h-2.5 rounded-sm bg-green-500" />
+                EV+ライン
+              </span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -197,6 +240,46 @@ export default function HyenaCalculator({ machines }: Props) {
               </div>
             </div>
           </div>
+
+          {/* ゾーン当選時EV */}
+          {zoneEVs.length > 0 && (
+            <div className="bg-white rounded-xl border border-slate-200 p-4">
+              <h3 className="text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
+                <span className="inline-block w-2.5 h-2.5 rounded-sm bg-yellow-400" />
+                ゾーン当選時の期待値
+              </h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-xs text-slate-400 border-b border-slate-100">
+                      <th className="text-left py-1.5 font-medium">ゾーン</th>
+                      <th className="text-right py-1.5 font-medium">残りG</th>
+                      <th className="text-right py-1.5 font-medium">到達コスト</th>
+                      <th className="text-right py-1.5 font-medium">当選時EV</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {zoneEVs.map((z) => (
+                      <tr key={z.game} className="border-b border-slate-50 last:border-0">
+                        <td className="py-2 font-medium text-slate-700">{z.label}</td>
+                        <td className="py-2 text-right text-slate-500">{z.gamesUntil}G</td>
+                        <td className="py-2 text-right text-slate-500">
+                          −{z.costYen.toLocaleString()}円
+                          <span className="text-xs text-slate-400 ml-1">({z.costCoins}枚)</span>
+                        </td>
+                        <td className={`py-2 text-right font-bold ${evColor(z.ev)}`}>
+                          {z.ev >= 0 ? "+" : ""}{z.ev.toLocaleString()}円
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <p className="text-xs text-slate-400 mt-2">
+                ※ ゾーン当選時EVはATが発生した場合の理論値（AT平均純増{machine.hyena?.atAvgPayout}枚を想定）
+              </p>
+            </div>
+          )}
 
           <div className="bg-slate-50 rounded-xl p-4 text-xs text-slate-500 flex justify-between items-center">
             <div className="space-y-0.5">
