@@ -1,0 +1,22 @@
+{
+  "id": "mibuno-yobikou",
+  "slug": "mibuno-yobikou",
+  "name": "聖闘士星矢 海皇覚醒SP",
+  "maker": "サミー",
+  "releaseDate": "2021-09",
+  "type": "AT",
+  "coinRate": 3,
+  "maxBonus": 0,
+  "spinPerHour": 700,
+  "settings": {
+    "1": { "bb": -1, "rb": -1, "at": 319, "machineRatio": 97.5 },
+    "2": { "bb": -1, "rb": -1, "at": 319, "machineRatio": 98.8 },
+    "3": { "bb": -1, "rb": -1, "at": 299, "machineRatio": 101.0 },
+    "4": { "bb": -1, "rb": -1, "at": 268, "machineRatio": 104.5 },
+    "5": { "bb": -1, "rb": -1, "at": 240, "machineRatio": 108.8 },
+    "6": { "bb": -1, "rb": -1, "at": 213, "machineRatio": 111.5 }
+  },
+  "tags": ["AT", "サミー", "版権"],
+  "description": "聖闘士星矢シリーズの6号機版。版権機の中でも高スペック。",
+  "featured": false
+}
