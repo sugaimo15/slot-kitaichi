@@ -17,7 +17,8 @@ export default function HyenaCalculator({ machines }: Props) {
   const [selectedSlug, setSelectedSlug] = useState(hyenaMachines[0]?.slug ?? "");
   const [setting, setSetting] = useState<SettingOption>("avg");
   const [currentGame, setCurrentGame] = useState(600);
-  const [exchangeRate, setExchangeRate] = useState(4.0);
+  const [lendCoins, setLendCoins] = useState(46);
+  const exchangeRate = 1000 / lendCoins;
 
   const machine = useMemo(
     () => hyenaMachines.find((m) => m.slug === selectedSlug),
@@ -86,28 +87,25 @@ export default function HyenaCalculator({ machines }: Props) {
             )}
           </div>
 
-          {/* 換金率 */}
+          {/* 貸出枚数 */}
           <div className="sm:col-span-2">
-            <div className="flex justify-between items-end mb-1">
-              <label className="text-xs font-medium text-slate-500">
-                換金率（ホールのコイン単価）
-              </label>
-              <span className="text-sm font-bold text-slate-700">{exchangeRate.toFixed(1)}円/枚</span>
+            <label className="block text-xs font-medium text-slate-500 mb-1">貸出枚数</label>
+            <div className="flex gap-2">
+              {[46, 47, 48].map((n) => (
+                <button
+                  key={n}
+                  onClick={() => setLendCoins(n)}
+                  className={`flex-1 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                    lendCoins === n
+                      ? "bg-slate-800 text-white border-slate-800"
+                      : "border-slate-200 text-slate-600 hover:border-slate-400"
+                  }`}
+                >
+                  {n}枚貸し
+                </button>
+              ))}
             </div>
-            <input
-              type="range"
-              min={2.0}
-              max={5.0}
-              step={0.1}
-              value={exchangeRate}
-              onChange={(e) => setExchangeRate(Number(e.target.value))}
-              className="w-full accent-blue-600"
-            />
-            <div className="flex justify-between text-xs text-slate-400 mt-0.5">
-              <span>2円（低換金）</span>
-              <span>4円（等価）</span>
-              <span>5円</span>
-            </div>
+            <p className="text-xs text-slate-400 mt-1">1枚あたり {(1000 / lendCoins).toFixed(2)}円</p>
           </div>
         </div>
 

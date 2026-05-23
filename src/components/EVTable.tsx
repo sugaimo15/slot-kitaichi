@@ -64,7 +64,7 @@ export default function EVTable({ machine }: Props) {
         </tbody>
       </table>
       <p className="text-xs text-slate-400 mt-2">
-        ※ 期待値は {machine.spinPerHour}回転/時・換金率4円/枚・3枚掛けで計算
+        ※ 期待値は {machine.spinPerHour}回転/時・46枚貸し・3枚掛けで計算
       </p>
     </div>
   );
