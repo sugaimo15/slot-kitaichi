@@ -23,6 +23,7 @@ export interface ZoneData {
   game: number;       // ゾーン中心ゲーム数
   label?: string;     // 表示ラベル（省略時は「{game}G」）
   hitRate?: number;   // ゾーン内AT当選率（%、例: 15.2）
+  note?: string;      // ゾーン種別注記（例: "強ゾーン", "高設定優遇"）
 }
 
 export interface HyenaData {
