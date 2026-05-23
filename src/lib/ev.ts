@@ -1,4 +1,13 @@
-import { SlotMachine, SettingData, HyenaResult } from "./types";
+import { SlotMachine, SettingData, HyenaResult, ZoneData } from "./types";
+
+export interface ZoneEVResult {
+  game: number;
+  label: string;
+  gamesUntil: number;
+  costCoins: number;
+  costYen: number;
+  ev: number;
+}
 
 // 期待値（円/時間）を計算。換金率はユーザー入力（デフォルト4円/枚）
 export function calcEV(
@@ -126,6 +135,35 @@ export function calcHyenaEV(
     ev,
     evPositiveGame,
   };
+}
+
+// ゾーンで当選した場合の期待値を計算（AT発生を仮定した理論値）
+export function calcZoneEVList(
+  machine: SlotMachine,
+  currentGame: number,
+  exchangeRate: number
+): ZoneEVResult[] {
+  const hyena = machine.hyena;
+  if (!hyena?.zones) return [];
+
+  const costPerSpin = 50 / hyena.base;
+
+  return hyena.zones
+    .filter((z: ZoneData) => z.game > currentGame)
+    .map((z: ZoneData) => {
+      const gamesUntil = z.game - currentGame;
+      const costCoins = Math.round(gamesUntil * costPerSpin);
+      const costYen = Math.round(costCoins * exchangeRate);
+      const ev = Math.round((hyena.atAvgPayout - costCoins) * exchangeRate);
+      return {
+        game: z.game,
+        label: z.label ?? `${z.game}G`,
+        gamesUntil,
+        costCoins,
+        costYen,
+        ev,
+      };
+    });
 }
 
 export function formatProb(denom: number): string {
