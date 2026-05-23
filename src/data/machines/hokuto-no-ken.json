@@ -14,14 +14,14 @@
     "base": 34.7,
     "resetOnBonus": true,
     "zones": [
-      { "game": 77,   "label": "77ゾーン" },
-      { "game": 128,  "label": "128ゾーン" },
-      { "game": 178,  "label": "178ゾーン" },
-      { "game": 333,  "label": "333ゾーン" },
-      { "game": 500,  "label": "500ゾーン" },
-      { "game": 600,  "label": "600ゾーン" },
-      { "game": 666,  "label": "666ゾーン" },
-      { "game": 1000, "label": "1000ゾーン" }
+      { "game": 77,   "label": "77ゾーン",   "hitRate": 8.5 },
+      { "game": 128,  "label": "128ゾーン",  "hitRate": 6.2 },
+      { "game": 178,  "label": "178ゾーン",  "hitRate": 6.8 },
+      { "game": 333,  "label": "333ゾーン",  "hitRate": 19.4 },
+      { "game": 500,  "label": "500ゾーン",  "hitRate": 8.1 },
+      { "game": 600,  "label": "600ゾーン",  "hitRate": 10.3 },
+      { "game": 666,  "label": "666ゾーン",  "hitRate": 17.6 },
+      { "game": 1000, "label": "1000ゾーン", "hitRate": 12.4 }
     ]
   },
   "settings": {
