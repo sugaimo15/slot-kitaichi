@@ -1,11 +1,7 @@
 import { getAllMachines } from "@/lib/machines";
 import CalculatorClient from "@/components/CalculatorClient";
 
-export default function CalculatorPage({
-  searchParams,
-}: {
-  searchParams: { machine?: string };
-}) {
+export default function CalculatorPage() {
   const machines = getAllMachines();
 
   return (
@@ -16,7 +12,7 @@ export default function CalculatorPage({
           機種・設定・回転数・プレイ時間を入力して期待値を計算します
         </p>
       </div>
-      <CalculatorClient machines={machines} initialSlug={searchParams.machine} />
+      <CalculatorClient machines={machines} />
     </div>
   );
 }
