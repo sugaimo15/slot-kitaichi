@@ -23,12 +23,13 @@ export interface ZoneData {
   game: number;       // ゾーン中心ゲーム数
   label?: string;     // 表示ラベル（省略時は「{game}G」）
   hitRate?: number;   // ゾーン内AT当選率（%、例: 15.2）
+  note?: string;      // ゾーン種別注記（例: "強ゾーン", "高設定優遇"）
 }
 
 export interface HyenaData {
   ceiling: number;        // 天井ゲーム数
   ceilingBonus: number;   // 天井恩恵のネット獲得枚数
-  atAvgPayout: number;    // ATのネット平均獲得枚数（AT純増×平均継続G）
+  atAvgPayout: number;    // ATのネット平均獲得枚数（AT純増×平均紙続G）
   base: number;           // 通常時の50枚あたりゲーム数（ベース）
   resetOnBonus: boolean;  // ボーナス後にゲーム数リセットされるか
   zones?: ZoneData[];     // AT当選しやすいゾーン一覧

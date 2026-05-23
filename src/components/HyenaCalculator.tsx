@@ -253,7 +253,7 @@ export default function HyenaCalculator({ machines }: Props) {
                   <thead>
                     <tr className="text-xs text-slate-400 border-b border-slate-100">
                       <th className="text-left py-1.5 font-medium">ゾーン</th>
-                      <th className="text-right py-1.5 font-medium">残G</th>
+                      <th className="text-right py-1.5 font-medium">残りG</th>
                       <th className="text-right py-1.5 font-medium">当選率</th>
                       <th className="text-right py-1.5 font-medium">到達コスト</th>
                       <th className="text-right py-1.5 font-medium">当選時EV</th>
@@ -262,11 +262,16 @@ export default function HyenaCalculator({ machines }: Props) {
                   <tbody>
                     {zoneEVs.map((z) => (
                       <tr key={z.game} className="border-b border-slate-50 last:border-0">
-                        <td className="py-2 font-medium text-slate-700">{z.label}</td>
+                        <td className="py-2">
+                          <span className="font-medium text-slate-700">{z.label}</span>
+                          {z.note && (
+                            <div className="text-[10px] text-slate-400 leading-tight mt-0.5">{z.note}</div>
+                          )}
+                        </td>
                         <td className="py-2 text-right text-slate-500">{z.gamesUntil}G</td>
                         <td className="py-2 text-right">
                           {z.hitRate !== null
-                            ? <span className="font-medium text-blue-600">{z.hitRate.toFixed(1)}%</span>
+                            ? <span className="font-medium text-blue-600">{z.hitRate.toFixed(1)}%<span className="text-[10px] text-slate-400 ml-0.5">推定</span></span>
                             : <span className="text-slate-300">―</span>
                           }
                         </td>
@@ -282,9 +287,10 @@ export default function HyenaCalculator({ machines }: Props) {
                   </tbody>
                 </table>
               </div>
-              <p className="text-xs text-slate-400 mt-2">
-                ※ ゾーン当選時EVはATが発生した場合の理論値（AT平均純増{machine.hyena?.atAvgPayout}枚を想定）
-              </p>
+              <div className="text-xs text-slate-400 mt-2 space-y-0.5">
+                <p>※ ゾーン当選時EVはATが発生した場合の理論値（AT平均純増{machine.hyena?.atAvgPayout}枚を想定）</p>
+                <p>※ 当選率は推定値です。実際の値とは異なる場合があります。</p>
+              </div>
             </div>
           )}
 
