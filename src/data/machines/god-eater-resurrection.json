@@ -9,15 +9,17 @@
   "spinPerHour": 700,
   "hyena": {
     "ceiling": 1000,
-    "ceilingBonus": 350,
-    "atAvgPayout": 350,
+    "ceilingBonus": 525,
+    "atAvgPayout": 525,
     "base": 31.0,
     "resetOnBonus": true,
     "zones": [
-      { "game": 200, "label": "200ゾーン", "hitRate": 12.3 },
-      { "game": 400, "label": "400ゾーン", "hitRate": 16.1 },
-      { "game": 600, "label": "600ゾーン", "hitRate": 17.5 },
-      { "game": 800, "label": "800ゾーン", "hitRate": 19.2 }
+      { "game": 100, "label": "100ゾーン", "hitRate": 14.0 },
+      { "game": 200, "label": "200ゾーン", "hitRate": 10.5 },
+      { "game": 300, "label": "300ゾーン", "hitRate": 16.0 },
+      { "game": 450, "label": "450ゾーン", "hitRate": 11.5 },
+      { "game": 600, "label": "600ゾーン", "hitRate": 13.0 },
+      { "game": 750, "label": "750ゾーン", "hitRate": 13.5 }
     ]
   },
   "settings": {
@@ -29,6 +31,6 @@
     "6": { "bb": -1, "rb": -1, "at": 290, "machineRatio": 114.9 }
   },
   "tags": ["AT", "山佐", "スマスロ", "版権", "高機械割"],
-  "description": "山佐の人気スマスロ。ストーリーパート純増9.0枚の高純増AT搭載。設定6の機械割114.9%は業界最高峰クラス。天井は最大1000G。",
+  "description": "山佐の人気スマスロ。AT純増9.0枚（ストーリーパート）、初当たり期待約525枚、ベース31G。規定ゲーム数は100/200/300/450/600/750/1000Gの7段階。100G・300Gが強ゾーン、200G・450Gは高設定優遇。設定6の機械割114.9%は業界最高峰クラス。天井1000G+α（リセット後600G+α）でAT確定。",
   "featured": true
 }
