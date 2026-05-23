@@ -5,13 +5,13 @@
   "maker": "コナミ",
   "releaseDate": "2023-06",
   "type": "AT",
-  "coinRate": 3,
   "maxBonus": 0,
   "spinPerHour": 700,
   "hyena": {
     "ceiling": 1000,
     "ceilingBonus": 1600,
-    "atAvgPayout": 1100,
+    "atAvgPayout": 400,
+    "base": 34.0,
     "resetOnBonus": true
   },
   "settings": {
@@ -23,6 +23,6 @@
     "6": { "bb": -1, "rb": -1, "at": 200, "machineRatio": 116.0 }
   },
   "tags": ["AT", "コナミ", "版権", "高機械割"],
-  "description": "コナミのウルトラマンATスロット。設定6は116%の超高スペック。",
+  "description": "コナミのウルトラマンATスロット。AT純増4.0枚、ベース34G。設定6は116%の超高スペック。",
   "featured": true
 }

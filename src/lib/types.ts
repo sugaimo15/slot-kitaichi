@@ -8,20 +8,23 @@ export type MakerName =
   | "大都技研"
   | "NET"
   | "オリンピア"
+  | "山佐"
+  | "三洋"
   | "その他";
 
 export interface SettingData {
-  bb: number;
-  rb: number;
-  at: number;
-  machineRatio: number;
+  bb: number;       // BB確率分母（-1: なし）
+  rb: number;       // RB確率分母（-1: なし）
+  at: number;       // AT/ART確率分母（-1: なし）
+  machineRatio: number;  // 機械割 %
 }
 
 export interface HyenaData {
-  ceiling: number;
-  ceilingBonus: number;
-  atAvgPayout: number;
-  resetOnBonus: boolean;
+  ceiling: number;        // 天井ゲーム数
+  ceilingBonus: number;   // 天井恩恵のネット獲得枚数
+  atAvgPayout: number;    // ATのネット平均獲得枚数（AT純増×平均継続G）
+  base: number;           // 通常時の50枚あたりゲーム数（ベース）
+  resetOnBonus: boolean;  // ボーナス後にゲーム数リセットされるか
 }
 
 export interface SlotMachine {
@@ -29,12 +32,11 @@ export interface SlotMachine {
   slug: string;
   name: string;
   maker: MakerName;
-  releaseDate: string;
+  releaseDate: string;   // "YYYY-MM"
   type: SlotType;
-  coinRate: number;
-  maxBonus: number;
-  spinPerHour: number;
-  hyena: HyenaData | null;
+  maxBonus: number;      // 最大ボーナス枚数
+  spinPerHour: number;   // 時間あたり回転数（デフォルト700）
+  hyena: HyenaData | null; // null = ハイエナ非対応（Aタイプ等）
   settings: {
     1: SettingData;
     2: SettingData;
@@ -49,14 +51,15 @@ export interface SlotMachine {
 }
 
 export interface MachineWithEV extends SlotMachine {
-  ev: Record<number, number>;
+  ev: Record<number, number>; // 設定→期待値（円/時間）、換金率4円/枚で計算
 }
 
 export interface HyenaResult {
   currentGame: number;
-  expectedSpins: number;
-  hitProbability: number;
-  ceilingProbability: number;
-  ev: number;
-  evPositiveGame: number | null;
+  expectedSpins: number;      // 次のATまでの期待回転数
+  netCoinsPerSpin: number;    // 通常時の1G実質コイン消費（50/base）
+  hitProbability: number;     // 天井前にATを引く確率
+  ceilingProbability: number; // 天井に到達する確率
+  ev: number;                 // 期待値（円）
+  evPositiveGame: number | null; // EV+になるゲーム数（null=常にEV-）
 }

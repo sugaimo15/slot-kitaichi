@@ -5,13 +5,13 @@
   "maker": "サミー",
   "releaseDate": "2022-11",
   "type": "AT",
-  "coinRate": 3,
   "maxBonus": 0,
   "spinPerHour": 700,
   "hyena": {
     "ceiling": 1000,
     "ceilingBonus": 1200,
-    "atAvgPayout": 900,
+    "atAvgPayout": 350,
+    "base": 33.0,
     "resetOnBonus": true
   },
   "settings": {
@@ -23,6 +23,6 @@
     "6": { "bb": -1, "rb": -1, "at": 218, "machineRatio": 115.0 }
   },
   "tags": ["AT", "サミー", "高機械割"],
-  "description": "サミーの海賊ATスロット。設定6の115%は破格の数値。",
+  "description": "サミーの海賊ATスロット。AT純増3.5枚、ベース33G。設定6の115%は破格の数値。",
   "featured": false
 }

@@ -2,16 +2,16 @@
   "id": "osouji-kidsband",
   "slug": "osouji-kidsband",
   "name": "バジリスク絆2",
-  "maker": "大都技研",
+  "maker": "ユニバーサル",
   "releaseDate": "2020-02",
   "type": "AT",
-  "coinRate": 3,
   "maxBonus": 0,
   "spinPerHour": 700,
   "hyena": {
-    "ceiling": 1000,
+    "ceiling": 800,
     "ceilingBonus": 1400,
-    "atAvgPayout": 1000,
+    "atAvgPayout": 290,
+    "base": 49.5,
     "resetOnBonus": true
   },
   "settings": {
@@ -22,7 +22,7 @@
     "5": { "bb": -1, "rb": -1, "at": 249, "machineRatio": 108.0 },
     "6": { "bb": -1, "rb": -1, "at": 220, "machineRatio": 112.5 }
   },
-  "tags": ["AT", "大都技研", "版権", "人気"],
-  "description": "大都技研のバジリスクシリーズ6号機。根強い人気を誇る定番機種。",
+  "tags": ["AT", "ユニバーサル", "版権", "人気"],
+  "description": "ユニバーサルのバジリスクシリーズ6号機。AT純増2.9枚、ベース49.5G。根強い人気を誇る定番機種。",
   "featured": true
 }

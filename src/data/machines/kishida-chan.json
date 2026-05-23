@@ -5,13 +5,13 @@
   "maker": "北電子",
   "releaseDate": "2023-01",
   "type": "AT",
-  "coinRate": 3,
   "maxBonus": 0,
   "spinPerHour": 700,
   "hyena": {
     "ceiling": 1000,
     "ceilingBonus": 1500,
-    "atAvgPayout": 800,
+    "atAvgPayout": 300,
+    "base": 35.0,
     "resetOnBonus": true
   },
   "settings": {

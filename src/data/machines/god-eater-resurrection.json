@@ -1,0 +1,28 @@
+{
+  "id": "god-eater-resurrection",
+  "slug": "god-eater-resurrection",
+  "name": "スマスロゴッドイーターリザレクション",
+  "maker": "山佐",
+  "releaseDate": "2024-07",
+  "type": "AT",
+  "maxBonus": 0,
+  "spinPerHour": 700,
+  "hyena": {
+    "ceiling": 1000,
+    "ceilingBonus": 350,
+    "atAvgPayout": 350,
+    "base": 31.0,
+    "resetOnBonus": true
+  },
+  "settings": {
+    "1": { "bb": -1, "rb": -1, "at": 352, "machineRatio": 97.9 },
+    "2": { "bb": -1, "rb": -1, "at": 345, "machineRatio": 99.5 },
+    "3": { "bb": -1, "rb": -1, "at": 335, "machineRatio": 101.8 },
+    "4": { "bb": -1, "rb": -1, "at": 320, "machineRatio": 105.6 },
+    "5": { "bb": -1, "rb": -1, "at": 305, "machineRatio": 110.0 },
+    "6": { "bb": -1, "rb": -1, "at": 290, "machineRatio": 114.9 }
+  },
+  "tags": ["AT", "山佐", "スマスロ", "版権", "高機械割"],
+  "description": "山佐の人気スマスロ。ストーリーパート純増9.0枚の高純増AT搭載。設定6の機械割114.9%は業界最高峰クラス。天井は最大1000G。",
+  "featured": true
+}

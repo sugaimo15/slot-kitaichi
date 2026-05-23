@@ -1,19 +1,24 @@
 import { SlotMachine, SettingData, HyenaResult } from "./types";
 
+// 期待値（円/時間）を計算。換金率はユーザー入力（デフォルト4円/枚）
 export function calcEV(
   machine: SlotMachine,
-  setting: 1 | 2 | 3 | 4 | 5 | 6
+  setting: 1 | 2 | 3 | 4 | 5 | 6,
+  exchangeRate: number = 4
 ): number {
   const s: SettingData = machine.settings[setting];
   const coinsPerHour = machine.spinPerHour * 3;
-  const ev = machine.coinRate * coinsPerHour * ((s.machineRatio / 100) - 1);
+  const ev = exchangeRate * coinsPerHour * ((s.machineRatio / 100) - 1);
   return Math.round(ev);
 }
 
-export function calcAllEV(machine: SlotMachine): Record<number, number> {
+export function calcAllEV(
+  machine: SlotMachine,
+  exchangeRate: number = 4
+): Record<number, number> {
   const result: Record<number, number> = {};
   for (let s = 1; s <= 6; s++) {
-    result[s] = calcEV(machine, s as 1 | 2 | 3 | 4 | 5 | 6);
+    result[s] = calcEV(machine, s as 1 | 2 | 3 | 4 | 5 | 6, exchangeRate);
   }
   return result;
 }
@@ -31,11 +36,18 @@ function getAtProb(
   return machine.settings[setting].at;
 }
 
-function calcRawEV(
+// 通常時の1G実質コイン消費 = 50 / ベース
+function netCoinsPerSpin(base: number): number {
+  return 50 / base;
+}
+
+// ハイエナEVの中核計算（再帰なし）
+// 投入コストは 50/base（ネット）で計算する
+function calcRawHyenaEV(
   machine: SlotMachine,
   currentGame: number,
   atProb: number,
-  rate: number
+  exchangeRate: number
 ): number | null {
   const hyena = machine.hyena;
   if (!hyena) return null;
@@ -43,6 +55,7 @@ function calcRawEV(
   if (remaining <= 0) return null;
 
   const p = 1 / atProb;
+  const costPerSpin = netCoinsPerSpin(hyena.base);
   let expectedSpins = 0;
   let survivalProb = 1.0;
 
@@ -55,20 +68,21 @@ function calcRawEV(
   const hitProbability = 1 - survivalProb;
   const expectedCoinsOut =
     hitProbability * hyena.atAvgPayout + survivalProb * hyena.ceilingBonus;
+  const expectedCost = expectedSpins * costPerSpin;
 
-  return Math.round((expectedCoinsOut - expectedSpins * 3) * rate);
+  return Math.round((expectedCoinsOut - expectedCost) * exchangeRate);
 }
 
+// ハイエナ期待値（外部公開）
 export function calcHyenaEV(
   machine: SlotMachine,
   currentGame: number,
   setting: 1 | 2 | 3 | 4 | 5 | 6 | "avg",
-  coinRate?: number
+  exchangeRate: number = 4
 ): HyenaResult | null {
   const hyena = machine.hyena;
   if (!hyena) return null;
 
-  const rate = coinRate ?? machine.coinRate;
   const remaining = hyena.ceiling - currentGame;
   if (remaining <= 0) return null;
 
@@ -76,6 +90,7 @@ export function calcHyenaEV(
   if (atProb <= 0) return null;
 
   const p = 1 / atProb;
+  const costPerSpin = netCoinsPerSpin(hyena.base);
   let expectedSpins = 0;
   let survivalProb = 1.0;
 
@@ -89,11 +104,13 @@ export function calcHyenaEV(
   const hitProbability = 1 - ceilingProbability;
   const expectedCoinsOut =
     hitProbability * hyena.atAvgPayout + ceilingProbability * hyena.ceilingBonus;
-  const ev = Math.round((expectedCoinsOut - expectedSpins * 3) * rate);
+  const expectedCost = expectedSpins * costPerSpin;
+  const ev = Math.round((expectedCoinsOut - expectedCost) * exchangeRate);
 
+  // EV+になる最低ゲーム数を探索（calcRawを直接呼ぶ）
   let evPositiveGame: number | null = null;
   for (let g = 0; g < hyena.ceiling; g++) {
-    const raw = calcRawEV(machine, g, atProb, rate);
+    const raw = calcRawHyenaEV(machine, g, atProb, exchangeRate);
     if (raw !== null && raw >= 0) {
       evPositiveGame = g;
       break;
@@ -103,6 +120,7 @@ export function calcHyenaEV(
   return {
     currentGame,
     expectedSpins: Math.round(expectedSpins),
+    netCoinsPerSpin: Math.round(costPerSpin * 100) / 100,
     hitProbability,
     ceilingProbability,
     ev,

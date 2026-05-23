@@ -1,0 +1,28 @@
+{
+  "id": "hokuto-no-ken",
+  "slug": "hokuto-no-ken",
+  "name": "スマスロ北斗の拳",
+  "maker": "サミー",
+  "releaseDate": "2023-01",
+  "type": "AT",
+  "maxBonus": 0,
+  "spinPerHour": 700,
+  "hyena": {
+    "ceiling": 1268,
+    "ceilingBonus": 400,
+    "atAvgPayout": 400,
+    "base": 34.7,
+    "resetOnBonus": true
+  },
+  "settings": {
+    "1": { "bb": -1, "rb": -1, "at": 383, "machineRatio": 98.0 },
+    "2": { "bb": -1, "rb": -1, "at": 360, "machineRatio": 99.5 },
+    "3": { "bb": -1, "rb": -1, "at": 340, "machineRatio": 101.5 },
+    "4": { "bb": -1, "rb": -1, "at": 319, "machineRatio": 104.0 },
+    "5": { "bb": -1, "rb": -1, "at": 275, "machineRatio": 109.2 },
+    "6": { "bb": -1, "rb": -1, "at": 235, "machineRatio": 113.0 }
+  },
+  "tags": ["AT", "サミー", "スマスロ", "版権", "人気"],
+  "description": "サミーの超人気スマスロ。AT純増素4枚、ベース34.7G。BBは継続率66～94%で1セット経100枚。設定6の機械割113%。天井は1268G。",
+  "featured": true
+}

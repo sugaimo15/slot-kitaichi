@@ -5,12 +5,12 @@ import { calcAllEV } from "./ev";
 
 const dataDir = path.join(process.cwd(), "src/data/machines");
 
-export function getAllMachines(): MachineWithEV[] {
+export function getAllMachines(exchangeRate = 4): MachineWithEV[] {
   const files = fs.readdirSync(dataDir).filter((f) => f.endsWith(".json"));
   return files.map((file) => {
     const raw = fs.readFileSync(path.join(dataDir, file), "utf-8");
     const machine: SlotMachine = JSON.parse(raw);
-    return { ...machine, ev: calcAllEV(machine) };
+    return { ...machine, ev: calcAllEV(machine, exchangeRate) };
   });
 }
 

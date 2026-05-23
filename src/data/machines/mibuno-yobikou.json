@@ -5,13 +5,13 @@
   "maker": "サミー",
   "releaseDate": "2021-09",
   "type": "AT",
-  "coinRate": 3,
   "maxBonus": 0,
   "spinPerHour": 700,
   "hyena": {
     "ceiling": 1000,
-    "ceilingBonus": 1300,
-    "atAvgPayout": 850,
+    "ceilingBonus": 1000,
+    "atAvgPayout": 280,
+    "base": 52.0,
     "resetOnBonus": true
   },
   "settings": {
@@ -23,6 +23,6 @@
     "6": { "bb": -1, "rb": -1, "at": 213, "machineRatio": 111.5 }
   },
   "tags": ["AT", "サミー", "版権"],
-  "description": "聖闘士星矢シリーズの6号機版。版権機の中でも高スペック。",
+  "description": "三洋の聖闘士星矢シリーズ6号機版。AT純増2.8枚、ベース52G。版権機の中でも高スペック。",
   "featured": false
 }
