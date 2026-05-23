@@ -10,6 +10,7 @@ export default function Header() {
         <nav className="flex gap-6 text-sm font-medium">
           <Link href="/machines" className="hover:text-yellow-400 transition-colors">機種一覧</Link>
           <Link href="/ranking" className="hover:text-yellow-400 transition-colors">ランキング</Link>
+          <Link href="/hyena" className="hover:text-yellow-400 transition-colors text-yellow-300">ハイエナ計算</Link>
           <Link href="/calculator" className="hover:text-yellow-400 transition-colors">計算ツール</Link>
         </nav>
       </div>

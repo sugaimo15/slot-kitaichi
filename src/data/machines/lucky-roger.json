@@ -8,6 +8,12 @@
   "coinRate": 3,
   "maxBonus": 0,
   "spinPerHour": 700,
+  "hyena": {
+    "ceiling": 1000,
+    "ceilingBonus": 1200,
+    "atAvgPayout": 900,
+    "resetOnBonus": true
+  },
   "settings": {
     "1": { "bb": -1, "rb": -1, "at": 318, "machineRatio": 97.3 },
     "2": { "bb": -1, "rb": -1, "at": 318, "machineRatio": 98.5 },

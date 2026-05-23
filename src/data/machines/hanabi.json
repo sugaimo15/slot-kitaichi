@@ -8,6 +8,7 @@
   "coinRate": 3,
   "maxBonus": 300,
   "spinPerHour": 700,
+  "hyena": null,
   "settings": {
     "1": { "bb": 268,  "rb": 455, "at": -1, "machineRatio": 97.2 },
     "2": { "bb": 255,  "rb": 399, "at": -1, "machineRatio": 98.8 },

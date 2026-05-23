@@ -11,10 +11,17 @@ export type MakerName =
   | "その他";
 
 export interface SettingData {
-  bb: number;       // BB確率分母（-1: なし）
-  rb: number;       // RB確率分母（-1: なし）
-  at: number;       // AT/ART確率分母（-1: なし）
-  machineRatio: number;  // 機械割 %
+  bb: number;
+  rb: number;
+  at: number;
+  machineRatio: number;
+}
+
+export interface HyenaData {
+  ceiling: number;
+  ceilingBonus: number;
+  atAvgPayout: number;
+  resetOnBonus: boolean;
 }
 
 export interface SlotMachine {
@@ -22,11 +29,12 @@ export interface SlotMachine {
   slug: string;
   name: string;
   maker: MakerName;
-  releaseDate: string;   // "YYYY-MM"
+  releaseDate: string;
   type: SlotType;
-  coinRate: number;      // コイン単価（円）。通常3or4
-  maxBonus: number;      // 最大ボーナス枚数
-  spinPerHour: number;   // 時間あたり回転数（デフォルト700）
+  coinRate: number;
+  maxBonus: number;
+  spinPerHour: number;
+  hyena: HyenaData | null;
   settings: {
     1: SettingData;
     2: SettingData;
@@ -41,5 +49,14 @@ export interface SlotMachine {
 }
 
 export interface MachineWithEV extends SlotMachine {
-  ev: Record<number, number>; // 設定→期待値（円/時間）
+  ev: Record<number, number>;
+}
+
+export interface HyenaResult {
+  currentGame: number;
+  expectedSpins: number;
+  hitProbability: number;
+  ceilingProbability: number;
+  ev: number;
+  evPositiveGame: number | null;
 }
