@@ -14,10 +14,10 @@
     "base": 31.0,
     "resetOnBonus": true,
     "zones": [
-      { "game": 200, "label": "200ゾーン" },
-      { "game": 400, "label": "400ゾーン" },
-      { "game": 600, "label": "600ゾーン" },
-      { "game": 800, "label": "800ゾーン" }
+      { "game": 200, "label": "200ゾーン", "hitRate": 12.3 },
+      { "game": 400, "label": "400ゾーン", "hitRate": 16.1 },
+      { "game": 600, "label": "600ゾーン", "hitRate": 17.5 },
+      { "game": 800, "label": "800ゾーン", "hitRate": 19.2 }
     ]
   },
   "settings": {

@@ -254,6 +254,7 @@ export default function HyenaCalculator({ machines }: Props) {
                     <tr className="text-xs text-slate-400 border-b border-slate-100">
                       <th className="text-left py-1.5 font-medium">ゾーン</th>
                       <th className="text-right py-1.5 font-medium">残G</th>
+                      <th className="text-right py-1.5 font-medium">当選率</th>
                       <th className="text-right py-1.5 font-medium">到達コスト</th>
                       <th className="text-right py-1.5 font-medium">当選時EV</th>
                     </tr>
@@ -263,6 +264,12 @@ export default function HyenaCalculator({ machines }: Props) {
                       <tr key={z.game} className="border-b border-slate-50 last:border-0">
                         <td className="py-2 font-medium text-slate-700">{z.label}</td>
                         <td className="py-2 text-right text-slate-500">{z.gamesUntil}G</td>
+                        <td className="py-2 text-right">
+                          {z.hitRate !== null
+                            ? <span className="font-medium text-blue-600">{z.hitRate.toFixed(1)}%</span>
+                            : <span className="text-slate-300">―</span>
+                          }
+                        </td>
                         <td className="py-2 text-right text-slate-500">
                           −{z.costYen.toLocaleString()}円
                           <span className="text-xs text-slate-400 ml-1">({z.costCoins}枚)</span>

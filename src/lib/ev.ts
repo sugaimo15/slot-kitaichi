@@ -7,6 +7,7 @@ export interface ZoneEVResult {
   costCoins: number;
   costYen: number;
   ev: number;
+  hitRate: number | null;  // ゾーン内AT当選率（%）、null = データなし
 }
 
 // 期待値（円/時間）を計算。換金率はユーザー入力（デフォルト4円/枚）
@@ -162,6 +163,7 @@ export function calcZoneEVList(
         costCoins,
         costYen,
         ev,
+        hitRate: z.hitRate ?? null,
       };
     });
 }
