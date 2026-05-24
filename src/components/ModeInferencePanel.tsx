@@ -110,8 +110,22 @@ export default function ModeInferencePanel({ config }: Props) {
 
   // 現在周期の残りゲーム数目安（1周期目平均100pt、2周期目以降平均300pt、約3pt/G）
   const pointsMax = currentCycleNum === 1 ? 200 : 600;
-  const avgCycleCeiling = currentCycleNum === 1 ? 100 : 300;
-  const remainingGamesInCycle = Math.round(Math.max(0, avgCycleCeiling - currentPoints) / 3);
+
+  // モード別の残りポイント（前兆当選まで）
+  const modeRemainingPts = useMemo(() => {
+    return config.modes
+      .filter(m => m.maxCycles >= currentCycleNum)
+      .map(m => {
+        const maxPt = (m.maxCycles === 1 || currentCycleNum === 1) ? 200 : 600;
+        return {
+          id: m.id,
+          label: m.label,
+          maxPt,
+          remaining: Math.max(0, maxPt - currentPoints),
+          prob: probabilities[m.id] ?? 0,
+        };
+      });
+  }, [config.modes, currentCycleNum, currentPoints, probabilities]);
 
   const recommendation = useMemo(() => {
     const tenjokuProb = probabilities[config.modes.find((m) => m.maxCycles === 1)?.id ?? ""] ?? 0;
@@ -276,14 +290,35 @@ export default function ModeInferencePanel({ config }: Props) {
             onChange={(e) => setCurrentPoints(Number(e.target.value))}
             className="w-full accent-indigo-500"
           />
-          <div className="flex justify-between items-center mt-1">
-            <p className="text-xs text-slate-400">
-              {currentCycleNum === 1 ? "1周期目：最大200pt" : "2周期目以降：最大600pt（前回600ptなら400pt以下）"}
-            </p>
-            <p className="text-xs font-medium text-indigo-600">
-              残り約{remainingGamesInCycle}G でCZ到達目安
-            </p>
-          </div>
+          <p className="text-xs text-slate-400 mt-1">
+            {currentCycleNum === 1 ? "1周期目：最大200pt" : "2周期目以降：最大600pt（前回600ptなら400pt以下）"}
+          </p>
+        </div>
+
+        {/* モード別 残りポイント（前兆当選まで） */}
+        <div className="bg-indigo-50 border border-indigo-100 rounded-lg p-3 space-y-2">
+          <div className="text-xs font-medium text-indigo-700 mb-2">前兆当選までの残りポイント目安（モード別）</div>
+          {modeRemainingPts.map(({ id, label, maxPt, remaining, prob }) => (
+            <div key={id} className="flex items-center justify-between gap-2">
+              <span className={`text-xs font-medium px-1.5 py-0.5 rounded border shrink-0 w-14 text-center ${modeBadge[id] ?? "bg-slate-100 text-slate-600 border-slate-300"}`}>
+                {label}
+              </span>
+              <span className="text-xs text-slate-400 shrink-0">（{prob}%）</span>
+              <div className="flex-1 text-right">
+                {remaining === 0 ? (
+                  <span className="text-xs font-bold text-green-600">前兆当選圏内</span>
+                ) : (
+                  <span className="text-xs font-bold text-slate-700">
+                    残り最大 <span className="text-indigo-600">{remaining}pt</span>
+                    <span className="text-slate-400 font-normal ml-1">（天井{maxPt}pt）</span>
+                  </span>
+                )}
+              </div>
+            </div>
+          ))}
+          <p className="text-[10px] text-slate-400 leading-snug pt-1 border-t border-indigo-100">
+            ※ 規定ポイントの上限に到達すると前兆が発生します。1周期目は全モード最大200pt。天国モードは1周期のみ。
+          </p>
         </div>
       </div>
 
