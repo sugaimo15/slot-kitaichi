@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { MachineWithEV } from "@/lib/types";
 import { calcCeilingEV, evColor } from "@/lib/ev";
 import EVTable from "@/components/EVTable";
+import ModeInferencePanel from "@/components/ModeInferencePanel";
 
 interface Props {
   machine: MachineWithEV;
@@ -173,6 +174,11 @@ export default function MultiCeilingTemplate({ machine }: Props) {
       <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-xs text-amber-700 leading-relaxed">
         ※ 周期天井・決戦ボーナススルー天井は当ツール未対応です。各天井の恩恵獲得枚数・区間内当選率は推定値を含むため、実際の値とは異なる場合があります。
       </div>
+
+      {/* モード推測（対応機種のみ） */}
+      {machine.modeInference && (
+        <ModeInferencePanel config={machine.modeInference} />
+      )}
 
       {/* 設定別スペック */}
       <div className="bg-white rounded-xl border border-slate-200 p-6">

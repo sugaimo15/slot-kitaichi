@@ -38,6 +38,22 @@
     "5": { "bb": -1, "rb": -1, "at": 277, "machineRatio": 109.0 },
     "6": { "bb": -1, "rb": -1, "at": 275, "machineRatio": 113.1 }
   },
+  "modeInference": {
+    "notes": "周期到達（CZ）をスルーした回数からモードを絞り込めます。マギウスマーク4個以上点灯で天国モード濃厚。",
+    "modes": [
+      { "id": "tsujoA", "label": "通常A", "maxCycles": 6, "baseRate": 65, "resetRate": 69 },
+      { "id": "tsujoB", "label": "通常B", "maxCycles": 3, "baseRate": 20, "resetRate": 18 },
+      { "id": "tsujoC", "label": "通常C", "maxCycles": 5, "baseRate": 10, "resetRate": 10 },
+      { "id": "tenjoku", "label": "天国",  "maxCycles": 1, "baseRate": 5,  "resetRate": 3  }
+    ],
+    "atTypes": [
+      { "id": "unknown",          "label": "不明/初打ち" },
+      { "id": "kakusen",          "label": "決戦ボーナス" },
+      { "id": "kakumei_bonus",    "label": "革命ボーナス" },
+      { "id": "kakumei_rush",     "label": "革命ラッシュ",   "tenjokuBoost": 3 },
+      { "id": "cho_kakumei_rush", "label": "超革命ラッシュ", "tenjokuBoost": 5 }
+    ]
+  },
   "tags": ["AT", "三共", "スマスロ", "版権", "多天井"],
   "description": "三共のスマスロ第1弾『革命機ヴァルヴレイヴ』の正統後継機。AT純増約9.0枚、ベース32.7G。天井は4種類（AT間1500G・CZ間999G・周期最大6周期・決戦ボーナス3連続スルー）。リセット時はAT間天井が1000Gに短縮。設定6の機械割は約113%。※周期天井・スルー天井は当ツール未対応。各種数値は推定を含みます。",
   "featured": true
