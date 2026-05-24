@@ -39,19 +39,18 @@
     "6": { "bb": -1, "rb": -1, "at": 275, "machineRatio": 113.1 }
   },
   "modeInference": {
-    "notes": "周期到達（CZ）をスルーした回数からモードを絞り込めます。マギウスマーク4個以上点灯で天国モード濃厚。",
+    "notes": "CZスルー回数（決戦ZONEに到達したがAT非当選だった回数）を入力するとモードを推測できます。CZスルーごとにモード昇格抽選が行われます。",
     "modes": [
-      { "id": "tsujoA", "label": "通常A", "maxCycles": 6, "baseRate": 65, "resetRate": 69 },
-      { "id": "tsujoB", "label": "通常B", "maxCycles": 3, "baseRate": 20, "resetRate": 18 },
-      { "id": "tsujoC", "label": "通常C", "maxCycles": 5, "baseRate": 10, "resetRate": 10 },
-      { "id": "tenjoku", "label": "天国",  "maxCycles": 1, "baseRate": 5,  "resetRate": 3  }
+      { "id": "tsujoA", "label": "通常A", "maxCycles": 6, "baseRate": 69, "resetRate": 69 },
+      { "id": "tsujoB", "label": "通常B", "maxCycles": 3, "baseRate": 25, "resetRate": 25 },
+      { "id": "tsujoC", "label": "通常C", "maxCycles": 5, "baseRate": 5,  "resetRate": 5  },
+      { "id": "tenjoku", "label": "天国",  "maxCycles": 1, "baseRate": 1,  "resetRate": 1  }
     ],
-    "atTypes": [
-      { "id": "unknown",          "label": "不明/初打ち" },
-      { "id": "kakusen",          "label": "決戦ボーナス" },
-      { "id": "kakumei_bonus",    "label": "革命ボーナス" },
-      { "id": "kakumei_rush",     "label": "革命ラッシュ",   "tenjokuBoost": 3 },
-      { "id": "cho_kakumei_rush", "label": "超革命ラッシュ", "tenjokuBoost": 5 }
+    "czFailTransition": [
+      [0.66, 0.29, 0.04, 0.01],
+      [0.00, 0.66, 0.32, 0.02],
+      [0.00, 0.00, 0.57, 0.43],
+      [0.66, 0.31, 0.02, 0.01]
     ]
   },
   "tags": ["AT", "三共", "スマスロ", "版権", "多天井"],

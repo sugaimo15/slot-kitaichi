@@ -21,52 +21,42 @@ const modeBadge: Record<string, string> = {
 };
 
 export default function ModeInferencePanel({ config }: Props) {
-  const [atTypeId, setAtTypeId]         = useState("unknown");
   const [cyclesSkipped, setCyclesSkipped] = useState(0);
   const [magiusMarks, setMagiusMarks]   = useState(0);
   const [isReset, setIsReset]           = useState(false);
 
   const probabilities = useMemo<Record<string, number>>(() => {
-    const atType = config.atTypes.find((t) => t.id === atTypeId);
+    // 初期状態: AT後/設定変更後はすべて同率（69/25/5/1）
+    let state = config.modes.map((m) => (isReset ? m.resetRate : m.baseRate) / 100);
 
-    // Base rates
-    const raw: Record<string, number> = {};
-    for (const m of config.modes) {
-      raw[m.id] = isReset ? m.resetRate : m.baseRate;
-    }
-
-    // Boost 天国 based on AT type
-    const boost = atType?.tenjokuBoost ?? 0;
-    if (boost > 0) {
-      const tenjokuId = config.modes.find((m) => m.maxCycles === 1)?.id;
-      if (tenjokuId && raw[tenjokuId] !== undefined) {
-        const share = boost / (config.modes.length - 1);
-        raw[tenjokuId] += boost;
-        for (const m of config.modes) {
-          if (m.id !== tenjokuId) raw[m.id] = Math.max(0, raw[m.id] - share);
+    // CZスルーごとにマルコフ連鎖で遷移
+    if (config.czFailTransition && cyclesSkipped > 0) {
+      const T = config.czFailTransition;
+      for (let iter = 0; iter < cyclesSkipped; iter++) {
+        const next = new Array(state.length).fill(0);
+        for (let from = 0; from < state.length; from++) {
+          for (let to = 0; to < state.length; to++) {
+            next[to] += state[from] * (T[from]?.[to] ?? 0);
+          }
         }
+        state = next;
       }
     }
 
-    // Boost 天国 based on Magius marks
-    const tenjokuId = config.modes.find((m) => m.maxCycles === 1)?.id;
-    if (tenjokuId && magiusMarks >= 4) {
+    // マギウスマーク: 天国モード（maxCycles=1）の確率を増幅
+    const tenjokuIdx = config.modes.findIndex((m) => m.maxCycles === 1);
+    if (tenjokuIdx >= 0 && magiusMarks >= 4) {
       const multiplier = magiusMarks >= 6 ? 20 : magiusMarks >= 5 ? 10 : 7;
-      raw[tenjokuId] *= multiplier;
+      state[tenjokuIdx] *= multiplier;
     }
 
-    // Cycle elimination: mode impossible if cyclesSkipped >= maxCycles
-    for (const m of config.modes) {
-      if (cyclesSkipped >= m.maxCycles) raw[m.id] = 0;
-    }
-
-    // Normalize
-    const total = Object.values(raw).reduce((a, b) => a + b, 0);
+    // 正規化
+    const total = state.reduce((a, b) => a + b, 0);
     if (total === 0) return Object.fromEntries(config.modes.map((m) => [m.id, 0]));
     return Object.fromEntries(
-      Object.entries(raw).map(([k, v]) => [k, Math.round((v / total) * 100)])
+      config.modes.map((m, i) => [m.id, Math.round((state[i] / total) * 100)])
     );
-  }, [config, atTypeId, cyclesSkipped, magiusMarks, isReset]);
+  }, [config, cyclesSkipped, magiusMarks, isReset]);
 
   const sortedModes = [...config.modes].sort(
     (a, b) => (probabilities[b.id] ?? 0) - (probabilities[a.id] ?? 0)
@@ -74,31 +64,32 @@ export default function ModeInferencePanel({ config }: Props) {
   const topMode = sortedModes[0];
   const topProb = probabilities[topMode?.id] ?? 0;
 
+  // 期待残り周期（モード別最大周期 - 消化周期の加重平均）
   const expectedMaxCycles = useMemo(() => {
     let weighted = 0;
-    let totalProb = 0;
     for (const m of config.modes) {
       const p = (probabilities[m.id] ?? 0) / 100;
       const remaining = Math.max(0, m.maxCycles - cyclesSkipped);
       weighted += p * remaining;
-      totalProb += p;
     }
-    return totalProb > 0 ? Math.round((weighted / totalProb) * 10) / 10 : 0;
+    return Math.round(weighted * 10) / 10;
   }, [probabilities, config.modes, cyclesSkipped]);
 
   const recommendation = useMemo(() => {
     const tenjokuProb = probabilities[config.modes.find((m) => m.maxCycles === 1)?.id ?? ""] ?? 0;
-    const tsujoB = probabilities[config.modes.find((m) => m.maxCycles === 3)?.id ?? ""] ?? 0;
-    if (tenjokuProb >= 50) return { label: "天国濃厚！強力な狙い目", color: "text-yellow-700", bg: "bg-yellow-50 border-yellow-200" };
-    if (tenjokuProb >= 25) return { label: "天国の可能性あり。早期当選に期待", color: "text-blue-700", bg: "bg-blue-50 border-blue-200" };
-    if (tsujoB >= 50 && cyclesSkipped >= 1) return { label: "通常B濃厚。残り最大2周期", color: "text-blue-700", bg: "bg-blue-50 border-blue-200" };
-    if (cyclesSkipped >= 4) return { label: "周期を多く消化。残り天井が近い可能性", color: "text-orange-700", bg: "bg-orange-50 border-orange-200" };
-    return { label: "通常A中心。平均的な状態", color: "text-slate-600", bg: "bg-slate-50 border-slate-200" };
+    const tsujoBProb  = probabilities[config.modes.find((m) => m.maxCycles === 3)?.id ?? ""] ?? 0;
+    const tsujoCProb  = probabilities[config.modes.find((m) => m.maxCycles === 5)?.id ?? ""] ?? 0;
+    if (tenjokuProb >= 50) return { label: "天国濃厚！最短1周期で当選確定", color: "text-yellow-700", bg: "bg-yellow-50 border-yellow-200" };
+    if (tenjokuProb >= 20) return { label: "天国の可能性あり。早期当選に期待", color: "text-blue-700", bg: "bg-blue-50 border-blue-200" };
+    if (tsujoCProb >= 40) return { label: "通常C濃厚。最大残り数周期でAT確定圏", color: "text-green-700", bg: "bg-green-50 border-green-200" };
+    if (tsujoBProb >= 40 && cyclesSkipped >= 1) return { label: "通常B濃厚。早い天井が期待できます", color: "text-blue-700", bg: "bg-blue-50 border-blue-200" };
+    if (cyclesSkipped >= 3) return { label: "通常C・天国への昇格が進んでいる可能性", color: "text-orange-700", bg: "bg-orange-50 border-orange-200" };
+    return { label: "通常A中心。標準的な状態です", color: "text-slate-600", bg: "bg-slate-50 border-slate-200" };
   }, [probabilities, config.modes, cyclesSkipped]);
 
-  const btnBase = "px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors";
+  const btnBase   = "flex-1 py-1.5 rounded-lg text-xs font-medium border transition-colors";
   const btnActive = "bg-slate-800 text-white border-slate-800";
-  const btnInactive = "border-slate-200 text-slate-600 hover:border-slate-400";
+  const btnInact  = "border-slate-200 text-slate-600 hover:border-slate-400";
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 p-5 space-y-5">
@@ -109,37 +100,25 @@ export default function ModeInferencePanel({ config }: Props) {
 
       {/* 入力エリア */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {/* 前回AT種別 */}
+        {/* CZスルー回数 */}
         <div className="sm:col-span-2">
-          <label className="block text-xs font-medium text-slate-500 mb-1">前回ボーナス／AT種別</label>
-          <div className="flex flex-wrap gap-1.5">
-            {config.atTypes.map((t) => (
-              <button
-                key={t.id}
-                onClick={() => setAtTypeId(t.id)}
-                className={`${btnBase} ${atTypeId === t.id ? btnActive : btnInactive}`}
-              >
-                {t.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* 周期スルー回数 */}
-        <div>
-          <label className="block text-xs font-medium text-slate-500 mb-1">周期スルー回数</label>
+          <label className="block text-xs font-medium text-slate-500 mb-1">
+            CZスルー回数（AT後/リセット後からの累計）
+          </label>
           <div className="flex gap-1">
             {[0, 1, 2, 3, 4, 5].map((n) => (
               <button
                 key={n}
                 onClick={() => setCyclesSkipped(n)}
-                className={`flex-1 py-1.5 rounded-lg text-xs font-medium border transition-colors ${cyclesSkipped === n ? btnActive : btnInactive}`}
+                className={`${btnBase} ${cyclesSkipped === n ? btnActive : btnInact}`}
               >
                 {n === 5 ? "5+" : `${n}回`}
               </button>
             ))}
           </div>
-          <p className="text-xs text-slate-400 mt-1">CZ（決戦ZONE）に到達したが当選しなかった回数</p>
+          <p className="text-xs text-slate-400 mt-1">
+            決戦ZONEに到達したがAT非当選だった回数（スルーのたびにモード昇格抽選あり）
+          </p>
         </div>
 
         {/* マギウスマーク */}
@@ -150,7 +129,7 @@ export default function ModeInferencePanel({ config }: Props) {
               <button
                 key={n}
                 onClick={() => setMagiusMarks(n)}
-                className={`flex-1 py-1.5 rounded-lg text-xs font-medium border transition-colors ${magiusMarks === n ? btnActive : btnInactive}`}
+                className={`${btnBase} ${magiusMarks === n ? btnActive : btnInact}`}
               >
                 {n}
               </button>
@@ -161,21 +140,22 @@ export default function ModeInferencePanel({ config }: Props) {
 
         {/* リセット */}
         <div>
-          <label className="block text-xs font-medium text-slate-500 mb-1">機種状態</label>
+          <label className="block text-xs font-medium text-slate-500 mb-1">起点</label>
           <div className="flex gap-2">
             <button
               onClick={() => setIsReset(false)}
-              className={`flex-1 py-1.5 rounded-lg text-xs font-medium border transition-colors ${!isReset ? btnActive : btnInactive}`}
+              className={`${btnBase} ${!isReset ? btnActive : btnInact}`}
             >
-              据え置き
+              AT後/不明
             </button>
             <button
               onClick={() => setIsReset(true)}
-              className={`flex-1 py-1.5 rounded-lg text-xs font-medium border transition-colors ${isReset ? btnActive : btnInactive}`}
+              className={`${btnBase} ${isReset ? btnActive : btnInact}`}
             >
               リセット後
             </button>
           </div>
+          <p className="text-xs text-slate-400 mt-1">AT後・リセット後は同率（69/25/5/1）でモード移行</p>
         </div>
       </div>
 
@@ -201,30 +181,38 @@ export default function ModeInferencePanel({ config }: Props) {
                 <span className={`text-sm font-bold w-10 text-right tabular-nums ${p === 0 ? "text-slate-300" : "text-slate-700"}`}>
                   {p}%
                 </span>
-                {p === 0 && (
-                  <span className="text-[10px] text-slate-300 w-10">除外</span>
-                )}
               </div>
             );
           })}
         </div>
 
         {/* サマリ */}
-        <div className={`rounded-lg border p-3 flex items-start gap-3 ${recommendation.bg}`}>
-          <div className="flex-1">
-            <div className={`text-sm font-bold ${recommendation.color}`}>{recommendation.label}</div>
-            {topMode && topProb > 0 && (
-              <div className="text-xs text-slate-500 mt-0.5">
-                最有力: <span className="font-medium">{topMode.label}</span>（{topProb}%）
-                ／ 最大残り周期 <span className="font-medium">{expectedMaxCycles}</span>周期
-              </div>
-            )}
-          </div>
+        <div className={`rounded-lg border p-3 ${recommendation.bg}`}>
+          <div className={`text-sm font-bold ${recommendation.color}`}>{recommendation.label}</div>
+          {topMode && topProb > 0 && (
+            <div className="text-xs text-slate-500 mt-0.5">
+              最有力: <span className="font-medium">{topMode.label}</span>（{topProb}%）
+              ／ 期待残り周期 <span className="font-medium">{expectedMaxCycles}</span>周期以内
+            </div>
+          )}
+        </div>
+
+        {/* モード別解説 */}
+        <div className="bg-slate-50 rounded-lg p-3 text-xs text-slate-500 space-y-1">
+          {config.modes.map((m) => (
+            <div key={m.id} className="flex gap-2">
+              <span className={`font-medium w-14 shrink-0 ${modeBadge[m.id]?.includes("yellow") ? "text-yellow-700" : modeBadge[m.id]?.includes("blue") ? "text-blue-700" : modeBadge[m.id]?.includes("green") ? "text-green-700" : "text-slate-600"}`}>
+                {m.label}
+              </span>
+              <span>最大 {m.maxCycles} 周期で天井</span>
+            </div>
+          ))}
         </div>
 
         <div className="text-[11px] text-slate-400 leading-relaxed space-y-0.5">
-          <p>※ 確率は公開されている推定移行率をもとにした参考値です。実際の内部モードと異なる場合があります。</p>
+          <p>※ 確率は公式解析情報をもとにした参考値です。実際の内部モードと異なる場合があります。</p>
           <p>※ マギウスマークは周期前兆中・周期到達時に画面内に表示される記号の数です。</p>
+          <p>※ CZスルー後のモード遷移率：通常A→ A:66%/B:29%/C:4%/天:1%、通常B→ B:66%/C:32%/天:2%、通常C→ C:57%/天:43%</p>
         </div>
       </div>
     </div>
