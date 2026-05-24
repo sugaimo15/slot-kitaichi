@@ -63,6 +63,7 @@ export interface SlotMachine {
   spinPerHour: number;   // 時間あたり回転数（デフォルト700）
   hyena: HyenaData | null; // null = ハイエナ非対応（Aタイプ等）
   ceilings?: CeilingDef[]; // multi-ceiling機種の複数天井
+  modeInference?: ModeInferenceConfig; // モード推測対応機種のみ
   settings: {
     1: SettingData;
     2: SettingData;
@@ -74,6 +75,26 @@ export interface SlotMachine {
   tags: string[];
   description: string;
   featured: boolean;
+}
+
+export interface ModeInfo {
+  id: string;
+  label: string;
+  maxCycles: number;   // このモードでの最大周期数（これ以上スルーすると消去）
+  baseRate: number;    // AT後の基本移行率 %
+  resetRate: number;   // リセット後の基本移行率 %
+}
+
+export interface ATTypeInfo {
+  id: string;
+  label: string;
+  tenjokuBoost?: number; // 天国モード率への加算ポイント
+}
+
+export interface ModeInferenceConfig {
+  modes: ModeInfo[];
+  atTypes: ATTypeInfo[];
+  notes?: string;
 }
 
 export interface MachineWithEV extends SlotMachine {
