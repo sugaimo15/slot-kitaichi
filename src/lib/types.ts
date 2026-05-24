@@ -93,7 +93,8 @@ export interface ATTypeInfo {
 
 export interface ModeInferenceConfig {
   modes: ModeInfo[];
-  atTypes: ATTypeInfo[];
+  atTypes?: ATTypeInfo[];
+  czFailTransition?: number[][];  // [fromMode][toMode] CZスルー後のモード遷移確率行列
   notes?: string;
 }
 
