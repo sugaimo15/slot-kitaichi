@@ -39,7 +39,7 @@
     "6": { "bb": -1, "rb": -1, "at": 275, "machineRatio": 113.1 }
   },
   "modeInference": {
-    "notes": "CZスルー回数（決戦ZONEに到達したがAT非当選だった回数）を入力するとモードを推測できます。CZスルーごとにモード昇格抽選が行われます。",
+    "notes": "CZスルー回数と決戦ボーナスAT非当選回数を入力するとモードを推測できます。どちらも同じモード昇格抽選が行われます（公式解析値に基づく参考値）。",
     "modes": [
       { "id": "tsujoA", "label": "通常A", "maxCycles": 6, "baseRate": 69, "resetRate": 69 },
       { "id": "tsujoB", "label": "通常B", "maxCycles": 3, "baseRate": 25, "resetRate": 25 },
