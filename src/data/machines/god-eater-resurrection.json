@@ -5,6 +5,7 @@
   "maker": "山佐",
   "releaseDate": "2024-07",
   "type": "AT",
+  "template": "simple-at",
   "maxBonus": 0,
   "spinPerHour": 700,
   "hyena": {

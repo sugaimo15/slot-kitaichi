@@ -52,6 +52,76 @@ function netCoinsPerSpin(base: number): number {
   return 50 / base;
 }
 
+export interface CeilingEVResult {
+  ev: number;                 // 期待値（円）
+  expectedSpins: number;      // 当選or天井までの期待回転数
+  hitProbability: number;     // 天井前に自力当選する確率
+  ceilingProbability: number; // 天井に到達する確率
+  evPositiveGame: number | null; // EV+になる最低ゲーム数
+}
+
+// 単一天井区間の期待値計算（汎用）。
+// 打ち始めゲーム数 currentGame から天井 ceiling までの切断幾何分布で計算する。
+// 自力当選・天井いずれも bonus 枚を獲得する前提（純粋なハイエナ期待値）。
+export function calcCeilingEV(
+  currentGame: number,
+  ceiling: number,
+  bonus: number,
+  base: number,
+  atProb: number,
+  exchangeRate: number
+): CeilingEVResult | null {
+  if (ceiling <= 0 || atProb <= 0 || base <= 0) return null;
+  const remaining = ceiling - currentGame;
+  if (remaining <= 0) return null;
+
+  const compute = (start: number): number => {
+    const rem = ceiling - start;
+    const p = 1 / atProb;
+    const costPerSpin = netCoinsPerSpin(base);
+    let expectedSpins = 0;
+    let survivalProb = 1.0;
+    for (let k = 1; k <= rem; k++) {
+      expectedSpins += survivalProb * p * k;
+      survivalProb *= 1 - p;
+    }
+    expectedSpins += rem * survivalProb;
+    const expectedCoinsOut = bonus; // 自力・天井とも bonus 枚
+    const expectedCost = expectedSpins * costPerSpin;
+    return (expectedCoinsOut - expectedCost) * exchangeRate;
+  };
+
+  const p = 1 / atProb;
+  const costPerSpin = netCoinsPerSpin(base);
+  let expectedSpins = 0;
+  let survivalProb = 1.0;
+  for (let k = 1; k <= remaining; k++) {
+    expectedSpins += survivalProb * p * k;
+    survivalProb *= 1 - p;
+  }
+  expectedSpins += remaining * survivalProb;
+
+  const ceilingProbability = survivalProb;
+  const hitProbability = 1 - ceilingProbability;
+  const ev = Math.round(compute(currentGame));
+
+  let evPositiveGame: number | null = null;
+  for (let g = 0; g < ceiling; g++) {
+    if (compute(g) >= 0) {
+      evPositiveGame = g;
+      break;
+    }
+  }
+
+  return {
+    ev,
+    expectedSpins: Math.round(expectedSpins),
+    hitProbability,
+    ceilingProbability,
+    evPositiveGame,
+  };
+}
+
 // ハイエナEVの中核計算（再帰なし）
 // 投入コストは 50/base（ネット）で計算する
 function calcRawHyenaEV(

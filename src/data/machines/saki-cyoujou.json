@@ -1,10 +1,11 @@
 {
   "id": "saki-cyoujou",
   "slug": "saki-cyoujou",
-  "name": "L咏-Saki-頂上決戦",
+  "name": "L咲-Saki-頂上決戦",
   "maker": "三洋",
   "releaseDate": "2025-08",
   "type": "AT",
+  "template": "simple-at",
   "maxBonus": 0,
   "spinPerHour": 700,
   "hyena": {

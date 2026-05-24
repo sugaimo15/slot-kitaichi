@@ -1,0 +1,44 @@
+{
+  "id": "valvrave2",
+  "slug": "valvrave2",
+  "name": "スマスロ革命機ヴァルヴレイヴ2",
+  "maker": "三共",
+  "releaseDate": "2025-11",
+  "type": "AT",
+  "template": "multi-ceiling",
+  "maxBonus": 0,
+  "spinPerHour": 700,
+  "hyena": null,
+  "ceilings": [
+    {
+      "id": "at",
+      "label": "AT間天井",
+      "game": 1500,
+      "resetGame": 1000,
+      "bonus": 500,
+      "base": 32.7,
+      "atProb": 400,
+      "note": "恩恵：決戦ボーナス/革命ボーナス/革命ラッシュ（1:1:1）。獲得枚数・当選率は推定値"
+    },
+    {
+      "id": "cz",
+      "label": "CZ間天井",
+      "game": 999,
+      "bonus": 150,
+      "base": 32.7,
+      "atProb": 150,
+      "note": "恩恵：CZ「決戦ZONE」確定。獲得枚数・当選率は推定値"
+    }
+  ],
+  "settings": {
+    "1": { "bb": -1, "rb": -1, "at": 285, "machineRatio": 96.3 },
+    "2": { "bb": -1, "rb": -1, "at": 283, "machineRatio": 98.0 },
+    "3": { "bb": -1, "rb": -1, "at": 281, "machineRatio": 99.8 },
+    "4": { "bb": -1, "rb": -1, "at": 279, "machineRatio": 104.7 },
+    "5": { "bb": -1, "rb": -1, "at": 277, "machineRatio": 109.0 },
+    "6": { "bb": -1, "rb": -1, "at": 275, "machineRatio": 113.1 }
+  },
+  "tags": ["AT", "三共", "スマスロ", "版権", "多天井"],
+  "description": "三共のスマスロ第1弾『革命機ヴァルヴレイヴ』の正統後継機。AT純増約9.0枚、ベース32.7G。天井は4種類（AT間1500G・CZ間999G・周期最大6周期・決戦ボーナス3連続スルー）。リセット時はAT間天井が1000Gに短縮。設定6の機械割は約113%。※周期天井・スルー天井は当ツール未対応。各種数値は推定を含みます。",
+  "featured": true
+}

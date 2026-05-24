@@ -5,6 +5,7 @@
   "maker": "サミー",
   "releaseDate": "2023-01",
   "type": "AT",
+  "template": "simple-at",
   "maxBonus": 0,
   "spinPerHour": 700,
   "hyena": {
