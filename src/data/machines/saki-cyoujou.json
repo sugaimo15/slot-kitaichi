@@ -5,6 +5,7 @@
   "maker": "三洋",
   "releaseDate": "2025-08",
   "type": "AT",
+  "template": "simple-at",
   "maxBonus": 0,
   "spinPerHour": 700,
   "hyena": {

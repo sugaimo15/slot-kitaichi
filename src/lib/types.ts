@@ -10,6 +10,7 @@ export type MakerName =
   | "オリンピア"
   | "山佐"
   | "三洋"
+  | "三共"
   | "その他";
 
 export interface SettingData {
@@ -18,6 +19,9 @@ export interface SettingData {
   at: number;       // AT/ART確率分母（-1: なし）
   machineRatio: number;  // 機械割 %
 }
+
+// 機種のゲームシステム種別。これでページのテンプレートが決まる
+export type MachineTemplate = "simple-at" | "multi-ceiling";
 
 export interface ZoneData {
   game: number;       // ゾーン中心ゲーム数
@@ -35,6 +39,18 @@ export interface HyenaData {
   zones?: ZoneData[];     // AT当選しやすいゾーン一覧
 }
 
+// 複数天井を持つ機種の、個々の天井定義
+export interface CeilingDef {
+  id: string;          // 機種内で一意（"at" / "cz" など）
+  label: string;       // "AT間天井" など表示名
+  game: number;        // 天井到達ゲーム数（通常時）
+  resetGame?: number;  // リセット（設定変更）時の天井ゲーム数
+  bonus: number;       // 天井到達時の恩恵・ネット期待獲得枚数
+  base: number;        // この区間のベース（50枚あたりG）
+  atProb: number;      // この区間中の当選確率分母（平均、推定可）
+  note?: string;       // 補足（恩恵内容など）
+}
+
 export interface SlotMachine {
   id: string;
   slug: string;
@@ -42,9 +58,11 @@ export interface SlotMachine {
   maker: MakerName;
   releaseDate: string;   // "YYYY-MM"
   type: SlotType;
+  template?: MachineTemplate; // 未指定時は "simple-at"
   maxBonus: number;      // 最大ボーナス枚数
   spinPerHour: number;   // 時間あたり回転数（デフォルト700）
   hyena: HyenaData | null; // null = ハイエナ非対応（Aタイプ等）
+  ceilings?: CeilingDef[]; // multi-ceiling機種の複数天井
   settings: {
     1: SettingData;
     2: SettingData;

@@ -1,24 +1,27 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getMachineBySlug, getAllMachines } from "@/lib/machines";
-import EVTable from "@/components/EVTable";
 import { evColor, machineRatioColor } from "@/lib/ev";
+import SimpleATTemplate from "@/templates/SimpleATTemplate";
+import MultiCeilingTemplate from "@/templates/MultiCeilingTemplate";
 
 export async function generateStaticParams() {
   const machines = getAllMachines();
   return machines.map((m) => ({ slug: m.slug }));
 }
 
-export default function MachineDetailPage({
+export default async function MachineDetailPage({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
-  const machine = getMachineBySlug(params.slug);
+  const { slug } = await params;
+  const machine = getMachineBySlug(slug);
   if (!machine) notFound();
 
   const ev6 = machine.ev[6];
   const ratio6 = machine.settings[6].machineRatio;
+  const template = machine.template ?? "simple-at";
 
   return (
     <div className="space-y-6">
@@ -69,24 +72,12 @@ export default function MachineDetailPage({
         </div>
       </div>
 
-      {/* スペック */}
-      <div className="bg-white rounded-xl border border-slate-200 p-6">
-        <h2 className="text-lg font-bold text-slate-800 mb-4">設定別スペック</h2>
-        <EVTable machine={machine} />
-      </div>
-
-      {/* 期待値計算ツールへのリンク */}
-      <div className="bg-blue-50 rounded-xl border border-blue-100 p-5 text-center">
-        <p className="text-sm text-slate-600 mb-3">
-          回転数や時給を細かく計算したいですか？
-        </p>
-        <Link
-          href={`/calculator?machine=${machine.slug}`}
-          className="inline-block bg-blue-600 text-white font-semibold px-5 py-2 rounded-full text-sm hover:bg-blue-700 transition-colors"
-        >
-          期待値計算ツールで試す
-        </Link>
-      </div>
+      {/* 機種タイプ別テンプレート */}
+      {template === "multi-ceiling" ? (
+        <MultiCeilingTemplate machine={machine} />
+      ) : (
+        <SimpleATTemplate machine={machine} />
+      )}
     </div>
   );
 }
