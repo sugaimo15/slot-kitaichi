@@ -79,13 +79,41 @@ export default function ModeInferencePanel({ config }: Props) {
     return Math.round(weighted * 10) / 10;
   }, [probabilities, config.modes, cyclesSkipped, kakusenSkipped]);
 
+  // 天井周期予測（ベイズ推定）
+  const ceilingPrediction = useMemo(() => {
+    if (!config.ceilingDistribution) return null;
+    const currentCycle = cyclesSkipped + 1; // 次に迎える周期番号
+    const effectiveMax = isReset ? 3 : 6;
+    if (currentCycle > effectiveMax) return null;
+
+    const results: { cycle: number; prob: number }[] = [];
+    for (let cycle = currentCycle; cycle <= effectiveMax; cycle++) {
+      let weightedProb = 0;
+      for (const m of config.modes) {
+        const dist = config.ceilingDistribution[m.id];
+        if (!dist) continue;
+        const modeProb = (probabilities[m.id] ?? 0) / 100;
+        const effDist = isReset ? dist.map((v, i) => (i < 3 ? v : 0)) : dist;
+        const remainingSum = effDist.slice(currentCycle - 1).reduce((a, b) => a + b, 0);
+        if (remainingSum > 0) {
+          weightedProb += modeProb * ((effDist[cycle - 1] ?? 0) / remainingSum);
+        }
+      }
+      results.push({ cycle, prob: weightedProb });
+    }
+
+    const total = results.reduce((a, b) => a + b.prob, 0);
+    if (total === 0) return null;
+    return results.map((r) => ({ cycle: r.cycle, prob: Math.round((r.prob / total) * 100) }));
+  }, [config, probabilities, cyclesSkipped, isReset]);
+
   const recommendation = useMemo(() => {
     const tenjokuProb = probabilities[config.modes.find((m) => m.maxCycles === 1)?.id ?? ""] ?? 0;
     const tsujoBProb  = probabilities[config.modes.find((m) => m.maxCycles === 3)?.id ?? ""] ?? 0;
     const tsujoCProb  = probabilities[config.modes.find((m) => m.maxCycles === 5)?.id ?? ""] ?? 0;
     if (tenjokuProb >= 50) return { label: "天国濃厚！最短1周期で当選確定", color: "text-yellow-700", bg: "bg-yellow-50 border-yellow-200" };
     if (tenjokuProb >= 20) return { label: "天国の可能性あり。早期当選に期待", color: "text-blue-700", bg: "bg-blue-50 border-blue-200" };
-    if (tsujoCProb >= 40) return { label: "通常C濃厚。最大残り数周期でAT確定圈", color: "text-green-700", bg: "bg-green-50 border-green-200" };
+    if (tsujoCProb >= 40) return { label: "通常C濃厚。最大残り数周期でAT確定圏", color: "text-green-700", bg: "bg-green-50 border-green-200" };
     if (tsujoBProb >= 40 && cyclesSkipped >= 1) return { label: "通常B濃厚。早い天井が期待できます", color: "text-blue-700", bg: "bg-blue-50 border-blue-200" };
     if (totalTransitions >= 3) return { label: "通常C・天国への昇格が進んでいる可能性", color: "text-orange-700", bg: "bg-orange-50 border-orange-200" };
     return { label: "通常A中心。標準的な状態です", color: "text-slate-600", bg: "bg-slate-50 border-slate-200" };
@@ -121,7 +149,7 @@ export default function ModeInferencePanel({ config }: Props) {
             ))}
           </div>
           <p className="text-xs text-slate-400 mt-1">
-            決戦ZONEに到達したAT非当選だった回数
+            決戦ZONEに到達したがAT非当選だった回数
           </p>
         </div>
 
@@ -149,7 +177,7 @@ export default function ModeInferencePanel({ config }: Props) {
         {/* 合計表示 */}
         {totalTransitions > 0 && (
           <div className="sm:col-span-2 bg-slate-50 rounded-lg px-3 py-2 text-xs text-slate-500">
-            昇格抗せん合計: <span className="font-bold text-slate-700">{totalTransitions}回</span>
+            昇格抽選合計: <span className="font-bold text-slate-700">{totalTransitions}回</span>
             （CZ {cyclesSkipped}回 ＋ 決戦ボーナス非当選 {kakusenSkipped}回）
           </div>
         )}
@@ -248,6 +276,39 @@ export default function ModeInferencePanel({ config }: Props) {
           <p>※ CZスルー後のモード遷移率：通常A→ A:66%/B:29%/C:4%/天:1%、通常B→ B:66%/C:32%/天:2%、通常C→ C:57%/天:43%</p>
         </div>
       </div>
+
+      {/* 天井周期予測 */}
+      {ceilingPrediction && (
+        <div className="space-y-3">
+          <h4 className="text-xs font-medium text-slate-500">天井周期予測</h4>
+          <p className="text-[11px] text-slate-400">
+            現在のモード推測確率をもとに、何周期目が天井になりやすいかをベイズ推定で計算した参考値です。
+            {isReset && <span className="text-orange-500 ml-1">リセット後は最大3周期まで有効です。</span>}
+          </p>
+          <div className="space-y-2">
+            {ceilingPrediction.map(({ cycle, prob }) => (
+              <div key={cycle} className="flex items-center gap-2">
+                <span className="text-xs font-medium w-14 shrink-0 text-center text-slate-600">
+                  {cycle}周期目
+                </span>
+                <div className="flex-1 h-4 bg-slate-100 rounded-full overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-indigo-400 transition-all duration-300"
+                    style={{ width: `${prob}%` }}
+                  />
+                </div>
+                <span className={`text-sm font-bold w-10 text-right tabular-nums ${prob === 0 ? "text-slate-300" : "text-slate-700"}`}>
+                  {prob}%
+                </span>
+              </div>
+            ))}
+          </div>
+          <div className="text-[11px] text-slate-400 leading-relaxed space-y-0.5">
+            <p>※ 天井周期振り分け（公式解析値）：通常A 1〜6周期(14/29/4/15/13/23%)、通常B 1〜3周期(5/13/82%)、通常C 1〜5周期(11/18/14/12/45%)、天国 1周期(100%)</p>
+            <p>※ 規定ポイントは1周期目最大200pt、2周期目以降最大600pt（前回600ptなら400pt以下）。1pt≒約0.3G程度。</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

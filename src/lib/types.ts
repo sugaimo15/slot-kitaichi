@@ -95,6 +95,7 @@ export interface ModeInferenceConfig {
   modes: ModeInfo[];
   atTypes?: ATTypeInfo[];
   czFailTransition?: number[][];  // [fromMode][toMode] CZスルー後のモード遷移確率行列
+  ceilingDistribution?: Record<string, number[]>; // モード別の天井周期振り分け（%、周期1〜N）
   notes?: string;
 }
 
