@@ -25,6 +25,8 @@ export default function ModeInferencePanel({ config }: Props) {
   const [kakusenSkipped, setKakusenSkipped] = useState(0);
   const [magiusMarks, setMagiusMarks]       = useState(0);
   const [isReset, setIsReset]               = useState(false);
+  const [currentCycleNum, setCurrentCycleNum] = useState(1);
+  const [currentPoints, setCurrentPoints]     = useState(0);
 
   // CZスルーと決戦ボーナスAT非当選は同じ遷移行列を使用
   const totalTransitions = cyclesSkipped + kakusenSkipped;
@@ -68,33 +70,32 @@ export default function ModeInferencePanel({ config }: Props) {
   const topMode = sortedModes[0];
   const topProb = probabilities[topMode?.id] ?? 0;
 
-  // 期待残り周期（モード別最大周期 - 消化周期の加重平均）
+  // 期待残り周期（現在の周期基準）
   const expectedMaxCycles = useMemo(() => {
     let weighted = 0;
     for (const m of config.modes) {
       const p = (probabilities[m.id] ?? 0) / 100;
-      const remaining = Math.max(0, m.maxCycles - cyclesSkipped);
+      const remaining = Math.max(0, m.maxCycles - (currentCycleNum - 1));
       weighted += p * remaining;
     }
     return Math.round(weighted * 10) / 10;
-  }, [probabilities, config.modes, cyclesSkipped, kakusenSkipped]);
+  }, [probabilities, config.modes, currentCycleNum]);
 
   // 天井周期予測（ベイズ推定）
   const ceilingPrediction = useMemo(() => {
     if (!config.ceilingDistribution) return null;
-    const currentCycle = cyclesSkipped + 1; // 次に迎える周期番号
     const effectiveMax = isReset ? 3 : 6;
-    if (currentCycle > effectiveMax) return null;
+    if (currentCycleNum > effectiveMax) return null;
 
     const results: { cycle: number; prob: number }[] = [];
-    for (let cycle = currentCycle; cycle <= effectiveMax; cycle++) {
+    for (let cycle = currentCycleNum; cycle <= effectiveMax; cycle++) {
       let weightedProb = 0;
       for (const m of config.modes) {
         const dist = config.ceilingDistribution[m.id];
         if (!dist) continue;
         const modeProb = (probabilities[m.id] ?? 0) / 100;
         const effDist = isReset ? dist.map((v, i) => (i < 3 ? v : 0)) : dist;
-        const remainingSum = effDist.slice(currentCycle - 1).reduce((a, b) => a + b, 0);
+        const remainingSum = effDist.slice(currentCycleNum - 1).reduce((a, b) => a + b, 0);
         if (remainingSum > 0) {
           weightedProb += modeProb * ((effDist[cycle - 1] ?? 0) / remainingSum);
         }
@@ -105,7 +106,12 @@ export default function ModeInferencePanel({ config }: Props) {
     const total = results.reduce((a, b) => a + b.prob, 0);
     if (total === 0) return null;
     return results.map((r) => ({ cycle: r.cycle, prob: Math.round((r.prob / total) * 100) }));
-  }, [config, probabilities, cyclesSkipped, isReset]);
+  }, [config, probabilities, currentCycleNum, isReset]);
+
+  // 現在周期の残りゲーム数目安（1周期目平均100pt、2周期目以降平均300pt、約3pt/G）
+  const pointsMax = currentCycleNum === 1 ? 200 : 600;
+  const avgCycleCeiling = currentCycleNum === 1 ? 100 : 300;
+  const remainingGamesInCycle = Math.round(Math.max(0, avgCycleCeiling - currentPoints) / 3);
 
   const recommendation = useMemo(() => {
     const tenjokuProb = probabilities[config.modes.find((m) => m.maxCycles === 1)?.id ?? ""] ?? 0;
@@ -217,6 +223,67 @@ export default function ModeInferencePanel({ config }: Props) {
             </button>
           </div>
           <p className="text-xs text-slate-400 mt-1">AT後・リセット後は同率（69/25/5/1）でモード移行</p>
+        </div>
+      </div>
+
+      {/* 現在の周期・ポイント */}
+      <div className="border-t border-slate-100 pt-4 space-y-4">
+        <h4 className="text-xs font-medium text-slate-500">現在の周期・ポイント（天井予測用）</h4>
+
+        {/* 現在の周期 */}
+        <div>
+          <label className="block text-xs font-medium text-slate-500 mb-1">現在の周期</label>
+          <div className="flex gap-1">
+            {[1, 2, 3, 4, 5, 6].map((n) => {
+              const disabled = isReset && n > 3;
+              return (
+                <button
+                  key={n}
+                  onClick={() => { if (!disabled) { setCurrentCycleNum(n); setCurrentPoints(0); } }}
+                  disabled={disabled}
+                  className={`${btnBase} ${currentCycleNum === n ? btnActive : disabled ? "border-slate-100 text-slate-300" : btnInact}`}
+                >
+                  {n}周期
+                </button>
+              );
+            })}
+          </div>
+          <p className="text-xs text-slate-400 mt-1">現在消化中の周期番号（通常はCZスルー回数＋1）</p>
+        </div>
+
+        {/* 現在のポイント */}
+        <div>
+          <div className="flex justify-between items-end mb-2">
+            <label className="text-xs font-medium text-slate-500">現在のポイント</label>
+            <div className="flex items-center gap-1">
+              <input
+                type="number"
+                min={0}
+                max={pointsMax}
+                value={currentPoints}
+                onChange={(e) => setCurrentPoints(Math.min(Math.max(0, Number(e.target.value)), pointsMax))}
+                className="w-20 border border-slate-200 rounded-lg px-2 py-1 text-sm text-right focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <span className="text-sm text-slate-500">pt</span>
+            </div>
+          </div>
+          <input
+            type="range"
+            min={0}
+            max={pointsMax}
+            step={10}
+            value={currentPoints}
+            onChange={(e) => setCurrentPoints(Number(e.target.value))}
+            className="w-full accent-indigo-500"
+          />
+          <div className="flex justify-between items-center mt-1">
+            <p className="text-xs text-slate-400">
+              {currentCycleNum === 1 ? "1周期目：最大200pt" : "2周期目以降：最大600pt（前回600ptなら400pt以下）"}
+            </p>
+            <p className="text-xs font-medium text-indigo-600">
+              残り約{remainingGamesInCycle}G でCZ到達目安
+            </p>
+          </div>
         </div>
       </div>
 
