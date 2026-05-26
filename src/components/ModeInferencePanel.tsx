@@ -380,31 +380,83 @@ export default function ModeInferencePanel({ config }: Props) {
       </div>
 
       {/* 天井周期予測 */}
-      {ceilingPrediction && (
-        <div className="space-y-3">
+      {config.ceilingDistribution && (
+        <div className="space-y-4">
           <h4 className="text-xs font-medium text-slate-500">天井周期予測</h4>
           <p className="text-[11px] text-slate-400">
-            現在のモード推測確率をもとに、何周期目が天井になりやすいかをベイズ推定で計算した参考値です。
+            モード別の天井周期振り分けと、モード推測確率で加重した合算予測を表示します。
             {isReset && <span className="text-orange-500 ml-1">リセット後は最大3周期まで有効です。</span>}
           </p>
-          <div className="space-y-2">
-            {ceilingPrediction.map(({ cycle, prob }) => (
-              <div key={cycle} className="flex items-center gap-2">
-                <span className="text-xs font-medium w-14 shrink-0 text-center text-slate-600">
-                  {cycle}周期目
-                </span>
-                <div className="flex-1 h-4 bg-slate-100 rounded-full overflow-hidden">
-                  <div
-                    className="h-full rounded-full bg-indigo-400 transition-all duration-300"
-                    style={{ width: `${prob}%` }}
-                  />
-                </div>
-                <span className={`text-sm font-bold w-10 text-right tabular-nums ${prob === 0 ? "text-slate-300" : "text-slate-700"}`}>
-                  {prob}%
-                </span>
-              </div>
-            ))}
+
+          {/* モード別振り分け */}
+          <div className="space-y-3">
+            {config.modes
+              .filter(m => m.maxCycles >= currentCycleNum)
+              .map(m => {
+                const dist = config.ceilingDistribution![m.id];
+                if (!dist) return null;
+                const modeEffMax = isReset ? Math.min(3, m.maxCycles) : m.maxCycles;
+                const effDist = isReset ? dist.map((v, i) => (i < 3 ? v : 0)) : dist;
+                const modeProb = probabilities[m.id] ?? 0;
+                const cycles = Array.from(
+                  { length: modeEffMax - currentCycleNum + 1 },
+                  (_, i) => ({ cycle: currentCycleNum + i, pct: effDist[currentCycleNum - 1 + i] ?? 0 })
+                );
+
+                return (
+                  <div key={m.id} className="rounded-lg border border-slate-100 p-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className={`text-xs font-medium px-1.5 py-0.5 rounded border w-14 text-center shrink-0 ${modeBadge[m.id] ?? "bg-slate-100 text-slate-600 border-slate-300"}`}>
+                        {m.label}
+                      </span>
+                      <span className="text-xs text-slate-500">
+                        モード確率 <span className="font-bold text-slate-700">{modeProb}%</span>
+                        <span className="ml-2">／ 最大{m.maxCycles}周期</span>
+                      </span>
+                    </div>
+                    <div className="space-y-1.5">
+                      {cycles.map(({ cycle, pct }) => (
+                        <div key={cycle} className="flex items-center gap-2">
+                          <span className="text-xs text-slate-400 w-12 shrink-0 text-right">{cycle}周期目</span>
+                          <div className="flex-1 h-3 bg-slate-100 rounded-full overflow-hidden">
+                            <div
+                              className={`h-full rounded-full transition-all duration-300 ${pct > 0 ? (modeColors[m.id] ?? "bg-slate-400") : ""}`}
+                              style={{ width: `${pct}%` }}
+                            />
+                          </div>
+                          <span className={`text-xs font-bold w-8 text-right tabular-nums ${pct === 0 ? "text-slate-300" : "text-slate-700"}`}>
+                            {pct}%
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })
+            }
           </div>
+
+          {/* 合算予測 */}
+          {ceilingPrediction && (
+            <div className="space-y-2 pt-3 border-t border-slate-100">
+              <div className="text-xs font-medium text-slate-500">合算予測（モード確率で加重）</div>
+              {ceilingPrediction.map(({ cycle, prob }) => (
+                <div key={cycle} className="flex items-center gap-2">
+                  <span className="text-xs font-medium w-12 shrink-0 text-right text-slate-600">{cycle}周期目</span>
+                  <div className="flex-1 h-4 bg-slate-100 rounded-full overflow-hidden">
+                    <div
+                      className="h-full rounded-full bg-indigo-400 transition-all duration-300"
+                      style={{ width: `${prob}%` }}
+                    />
+                  </div>
+                  <span className={`text-sm font-bold w-10 text-right tabular-nums ${prob === 0 ? "text-slate-300" : "text-slate-700"}`}>
+                    {prob}%
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+
           <div className="text-[11px] text-slate-400 leading-relaxed space-y-0.5">
             <p>※ 天井周期振り分け（公式解析値）：通常A 1〜6周期(14/29/4/15/13/23%)、通常B 1〜3周期(5/13/82%)、通常C 1〜5周期(11/18/14/12/45%)、天国 1周期(100%)</p>
             <p>※ 規定ポイントは1周期目最大200pt、2周期目以降最大600pt（前回600ptなら400pt以下）。1pt≒約0.3G程度。</p>
