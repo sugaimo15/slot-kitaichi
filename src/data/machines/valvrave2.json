@@ -40,6 +40,12 @@
   },
   "modeInference": {
     "notes": "CZスルー回数と決戦ボーナスAT非当選回数を入力するとモードを推測できます。どちらも同じモード昇格抽選が行われます（公式解析値に基づく参考値）。",
+    "hasMagiusMarks": true,
+    "hasCyclePoints": true,
+    "czSkipNote": "決戦ZONEに到達したがAT非当選",
+    "bonusSkipLabel": "決戦ボーナスAT非当選",
+    "bonusSkipNote": "決戦ボーナス当選後にAT非当選",
+    "transitionNote": "CZスルー後の遷移率：通常A→ A:66%/B:29%/C:4%/天:1%、通常B→ B:66%/C:32%/天:2%、通常C→ C:57%/天:43%",
     "modes": [
       { "id": "tsujoA", "label": "通常A", "maxCycles": 6, "baseRate": 69, "resetRate": 69 },
       { "id": "tsujoB", "label": "通常B", "maxCycles": 3, "baseRate": 25, "resetRate": 25 },
