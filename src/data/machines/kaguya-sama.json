@@ -1,0 +1,44 @@
+{
+  "id": "kaguya-sama",
+  "slug": "kaguya-sama",
+  "name": "スマスロ かぐや様は告らせたい",
+  "maker": "三共",
+  "releaseDate": "2024-09",
+  "type": "AT",
+  "template": "multi-ceiling",
+  "maxBonus": 0,
+  "spinPerHour": 800,
+  "hyena": null,
+  "ceilings": [
+    {
+      "id": "at-big",
+      "label": "AT間天井（BIG後）",
+      "game": 1100,
+      "resetGame": 800,
+      "bonus": 250,
+      "base": 31,
+      "atProb": 350,
+      "note": "恩恵：スーパーBIG確定。BIG（AT扱い）後にゲーム数カウンターリセット。リセット後（設定変更）は800Gに短縮。獲得枚数・当選率は推定値"
+    },
+    {
+      "id": "at-reg",
+      "label": "REG後天井",
+      "game": 900,
+      "bonus": 250,
+      "base": 31,
+      "atProb": 350,
+      "note": "恩恵：スーパーBIG確定。REGはAT非扱いのためカウンター継続、900Gで天井へ移行。REG後0Gから入力してください。獲得枚数・当選率は推定値"
+    }
+  ],
+  "settings": {
+    "1": { "bb": -1, "rb": -1, "at": 362, "machineRatio": 97.7 },
+    "2": { "bb": -1, "rb": -1, "at": 357, "machineRatio": 98.8 },
+    "3": { "bb": -1, "rb": -1, "at": 351, "machineRatio": 101.2 },
+    "4": { "bb": -1, "rb": -1, "at": 346, "machineRatio": 105.8 },
+    "5": { "bb": -1, "rb": -1, "at": 340, "machineRatio": 110.8 },
+    "6": { "bb": -1, "rb": -1, "at": 335, "machineRatio": 114.9 }
+  },
+  "tags": ["AT", "三共", "スマスロ", "版権", "多天井"],
+  "description": "三共のスマスロ版権機。AT純増約ガO．0枚、ベース31G。BIG（AT扱い）後天井は1100G（リセット後800G）、REG後は900G天井。CZスルー7回天井・チャンス目30回カウンター天井も存在するが当ツール未対応。内部モードA～D（モードD：最短5チャンス目でCZ当選）。設定6の機械割は絋115%。各種数値は推定を含みます。",
+  "featured": true
+}
