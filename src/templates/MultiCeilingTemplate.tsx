@@ -26,6 +26,7 @@ export default function MultiCeilingTemplate({ machine }: Props) {
   const [magiusMarks, setMagiusMarks]         = useState(0);
   const [currentCycleNum, setCurrentCycleNum] = useState(1);
   const [currentPoints, setCurrentPoints]     = useState(0);
+  const [currentChanceMei, setCurrentChanceMei] = useState(0);
 
   const exchangeRate = 1000 / lendCoins;
   const pointsMax = currentCycleNum === 1 ? 200 : 600;
@@ -36,9 +37,19 @@ export default function MultiCeilingTemplate({ machine }: Props) {
   const prevSectionLabel = modeConfig?.prevBonusLabel ? "前回ボーナス種別" : "据え置き / リセット";
   const hasCyclePoints = modeConfig?.hasCyclePoints === true;
   const hasMagiusMarks = modeConfig?.hasMagiusMarks === true;
+  const chanceMeiBucketSize = modeConfig?.chanceMeiBucketSize;
+  const hasChanceMei = !!chanceMeiBucketSize;
   const czSkipNote = modeConfig?.czSkipNote ?? "決戦ZONEに到達したがAT非当選";
   const bonusSkipLabel = modeConfig?.bonusSkipLabel ?? "決戦ボーナスAT非当選";
   const bonusSkipNote = modeConfig?.bonusSkipNote ?? "決戦ボーナス当選後にAT非当選";
+
+  // チャンス目入力がある場合、バケット番号に変換してcurrentCycleNumとして使う
+  const effectiveCycleNum = hasChanceMei
+    ? (currentChanceMei === 0 ? 1 : Math.ceil(currentChanceMei / chanceMeiBucketSize!))
+    : currentCycleNum;
+  const chanceMeiMax = hasChanceMei
+    ? Math.max(...(modeConfig!.modes.map((m) => m.maxCycles))) * chanceMeiBucketSize!
+    : 0;
 
   const rows = useMemo(() => {
     return ceilings.map((c) => {
@@ -205,6 +216,46 @@ export default function MultiCeilingTemplate({ machine }: Props) {
           </div>
         )}
 
+        {/* チャンス目入力（chanceMeiBucketSize がある機種のみ） */}
+        {hasModeInference && hasChanceMei && (
+          <div className="border-t border-slate-100 pt-4 space-y-3">
+            <div className="text-xs font-semibold text-slate-500">チャンス目（天井予測用）</div>
+            <div>
+              <div className="flex justify-between items-end mb-2">
+                <label className="text-xs font-medium text-slate-500">現在のチャンス目</label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    min={0}
+                    max={chanceMeiMax}
+                    value={currentChanceMei}
+                    onChange={(e) => setCurrentChanceMei(Math.min(Math.max(0, Number(e.target.value)), chanceMeiMax))}
+                    className="w-20 border border-slate-200 rounded-lg px-3 py-1.5 text-sm text-right focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <span className="text-sm text-slate-500">回</span>
+                </div>
+              </div>
+              <input
+                type="range"
+                min={0}
+                max={chanceMeiMax}
+                step={1}
+                value={currentChanceMei}
+                onChange={(e) => setCurrentChanceMei(Number(e.target.value))}
+                className="w-full accent-blue-600"
+              />
+              <p className="text-xs text-slate-400 mt-1">
+                画面左下に表示されるチャンス目カウンター（0〜{chanceMeiMax}）
+                {currentChanceMei > 0 && (
+                  <span className="ml-1 text-blue-600 font-medium">
+                    → {(effectiveCycleNum - 1) * chanceMeiBucketSize! + 1}〜{effectiveCycleNum * chanceMeiBucketSize!}回目ゾーン
+                  </span>
+                )}
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* スルー回数（モード推測対応機種のみ） */}
         {hasModeInference && (
           <div className="border-t border-slate-100 pt-4 space-y-4">
@@ -329,7 +380,7 @@ export default function MultiCeilingTemplate({ machine }: Props) {
           kakusenSkipped={kakusenSkipped}
           magiusMarks={magiusMarks}
           isReset={isReset}
-          currentCycleNum={currentCycleNum}
+          currentCycleNum={effectiveCycleNum}
           currentPoints={currentPoints}
         />
       )}
