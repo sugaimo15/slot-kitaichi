@@ -83,16 +83,20 @@ export default function ModeInferencePanel({
         state[tenjokuIdx] *= multiplier;
       }
     }
+    // 現在位置ではありえないモード（maxCycles < currentCycleNum）をゼロに
+    config.modes.forEach((m, i) => {
+      if (m.maxCycles < currentCycleNum) state[i] = 0;
+    });
     const total = state.reduce((a, b) => a + b, 0);
     if (total === 0) return Object.fromEntries(config.modes.map((m) => [m.id, 0]));
     return Object.fromEntries(
       config.modes.map((m, i) => [m.id, Math.round((state[i] / total) * 100)])
     );
-  }, [config, totalTransitions, magiusMarks, isReset]);
+  }, [config, totalTransitions, magiusMarks, isReset, currentCycleNum]);
 
-  const sortedModes = [...config.modes].sort(
-    (a, b) => (probabilities[b.id] ?? 0) - (probabilities[a.id] ?? 0)
-  );
+  const sortedModes = config.modes
+    .filter((m) => m.maxCycles >= currentCycleNum)
+    .sort((a, b) => (probabilities[b.id] ?? 0) - (probabilities[a.id] ?? 0));
   const topMode = sortedModes[0];
   const topProb = probabilities[topMode?.id] ?? 0;
 
@@ -108,11 +112,13 @@ export default function ModeInferencePanel({
 
   // Generic recommendation based on best/worst mode by maxCycles
   const recommendation = useMemo(() => {
-    const sortedByQuality = [...config.modes].sort((a, b) => a.maxCycles - b.maxCycles);
+    const possible = config.modes.filter((m) => m.maxCycles >= currentCycleNum);
+    const sortedByQuality = [...possible].sort((a, b) => a.maxCycles - b.maxCycles);
     const bestMode = sortedByQuality[0];
     const worstMode = sortedByQuality[sortedByQuality.length - 1];
-    const bestProb = probabilities[bestMode?.id] ?? 0;
-    const worstProb = probabilities[worstMode?.id] ?? 0;
+    if (!bestMode || !worstMode) return { label: "推測不能", color: "text-slate-600", bg: "bg-slate-50 border-slate-200" };
+    const bestProb = probabilities[bestMode.id] ?? 0;
+    const worstProb = probabilities[worstMode.id] ?? 0;
 
     if (bestProb >= 50) return {
       label: `${bestMode.label}濃厚！最短${displayMaxCycles(bestMode.maxCycles)}${cycleUnit}で天井確定`,
@@ -130,7 +136,7 @@ export default function ModeInferencePanel({
       label: `${worstMode.label}中心。標準的な状態です`,
       color: "text-slate-600", bg: "bg-slate-50 border-slate-200",
     };
-  }, [probabilities, config.modes, cycleUnit, totalTransitions]);
+  }, [probabilities, config.modes, cycleUnit, totalTransitions, currentCycleNum]);
 
   const modeRemainingPts = useMemo(() => {
     return config.modes
