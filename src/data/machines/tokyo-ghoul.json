@@ -1,0 +1,44 @@
+{
+  "id": "tokyo-ghoul",
+  "slug": "tokyo-ghoul",
+  "name": "スマスロ東京喰種",
+  "maker": "その他",
+  "releaseDate": "2025-02",
+  "type": "AT",
+  "template": "multi-ceiling",
+  "maxBonus": 0,
+  "spinPerHour": 700,
+  "hyena": null,
+  "ceilings": [
+    {
+      "id": "cz",
+      "label": "CZ間天井",
+      "game": 600,
+      "resetGame": 200,
+      "bonus": 400,
+      "base": 31,
+      "atProb": 350,
+      "note": "恩恵：CZ「レミニセンス」確定（AT期待度約52%）または上位CZ「大喰いの利世」（AT期待度約75%）。リセット後（設定変更）は初回のみ200Gに短縮。獲得枚数・当選率は推定値"
+    },
+    {
+      "id": "at",
+      "label": "AT間天井",
+      "game": 1200,
+      "bonus": 700,
+      "base": 31,
+      "atProb": 350,
+      "note": "恩恵：AT「東京喰種咬」確定。獲得枚数・当選率は推定値"
+    }
+  ],
+  "settings": {
+    "1": { "bb": -1, "rb": -1, "at": 394, "machineRatio": 97.5 },
+    "2": { "bb": -1, "rb": -1, "at": 381, "machineRatio": 99.0 },
+    "3": { "bb": -1, "rb": -1, "at": 357, "machineRatio": 101.6 },
+    "4": { "bb": -1, "rb": -1, "at": 326, "machineRatio": 105.6 },
+    "5": { "bb": -1, "rb": -1, "at": 291, "machineRatio": 110.3 },
+    "6": { "bb": -1, "rb": -1, "at": 261, "machineRatio": 114.9 }
+  },
+  "tags": ["AT", "その他", "スマスロ", "版権", "多天井"],
+  "description": "クロスアルファのスマスロ版権機（2025年2月導入）。AT純増約4.0枚、ベース31G。CZ間天井600G（リセット後初回は200G）、AT間天井1200G。内部にモードA〜天国の6種が存在するが移行率は未公開。設定6の機械割は約115%。各種数値は推定を含みます。",
+  "featured": true
+}
