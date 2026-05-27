@@ -30,6 +30,16 @@ export default function MultiCeilingTemplate({ machine }: Props) {
   const exchangeRate = 1000 / lendCoins;
   const pointsMax = currentCycleNum === 1 ? 200 : 600;
 
+  const modeConfig = machine.modeInference;
+  const prevBonusLabel = modeConfig?.prevBonusLabel ?? "通常（据え置き）";
+  const prevResetLabel = modeConfig?.prevResetLabel ?? "リセット";
+  const prevSectionLabel = modeConfig?.prevBonusLabel ? "前回ボーナス種別" : "据え置き / リセット";
+  const hasCyclePoints = modeConfig?.hasCyclePoints === true;
+  const hasMagiusMarks = modeConfig?.hasMagiusMarks === true;
+  const czSkipNote = modeConfig?.czSkipNote ?? "決戦ZONEに到達したがAT非当選";
+  const bonusSkipLabel = modeConfig?.bonusSkipLabel ?? "決戦ボーナスAT非当選";
+  const bonusSkipNote = modeConfig?.bonusSkipNote ?? "決戦ボーナス当選後にAT非当選";
+
   const rows = useMemo(() => {
     return ceilings.map((c) => {
       const ceilingGame = isReset && c.resetGame ? c.resetGame : c.game;
@@ -73,22 +83,22 @@ export default function MultiCeilingTemplate({ machine }: Props) {
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-500 mb-1">据え置き / リセット</label>
+            <label className="block text-xs font-medium text-slate-500 mb-1">{prevSectionLabel}</label>
             <div className="flex gap-2">
               <button
                 onClick={() => setIsReset(false)}
                 className={`flex-1 py-2 rounded-lg text-sm font-medium border transition-colors ${!isReset ? "bg-slate-800 text-white border-slate-800" : "border-slate-200 text-slate-600 hover:border-slate-400"}`}
               >
-                通常（据え置き）
+                {prevBonusLabel}
               </button>
               <button
                 onClick={() => setIsReset(true)}
                 className={`flex-1 py-2 rounded-lg text-sm font-medium border transition-colors ${isReset ? "bg-slate-800 text-white border-slate-800" : "border-slate-200 text-slate-600 hover:border-slate-400"}`}
               >
-                リセット
+                {prevResetLabel}
               </button>
             </div>
-            <p className="text-xs text-slate-400 mt-1">リセット時は天井短縮・モード移行率が変わります</p>
+            <p className="text-xs text-slate-400 mt-1">天井ゲーム数とモード初期確率が変わります</p>
           </div>
         </div>
 
@@ -119,8 +129,8 @@ export default function MultiCeilingTemplate({ machine }: Props) {
           />
         </div>
 
-        {/* 周期・ポイント（モード推測対応機種のみ） */}
-        {hasModeInference && (
+        {/* 周期・ポイント（hasCyclePoints の機種のみ） */}
+        {hasModeInference && hasCyclePoints && (
           <div className="border-t border-slate-100 pt-4 space-y-4">
             <div className="text-xs font-semibold text-slate-500">周期・ポイント</div>
 
@@ -145,21 +155,23 @@ export default function MultiCeilingTemplate({ machine }: Props) {
                 <p className="text-xs text-slate-400 mt-1">消化中の周期番号</p>
               </div>
 
-              <div>
-                <label className="block text-xs font-medium text-slate-500 mb-1">マギウスマーク点灯数</label>
-                <div className="flex gap-1">
-                  {[0, 1, 2, 3, 4, 5, 6].map((n) => (
-                    <button
-                      key={n}
-                      onClick={() => setMagiusMarks(n)}
-                      className={`${btnBase} ${magiusMarks === n ? btnActive : btnInact}`}
-                    >
-                      {n}
-                    </button>
-                  ))}
+              {hasMagiusMarks && (
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 mb-1">マギウスマーク点灯数</label>
+                  <div className="flex gap-1">
+                    {[0, 1, 2, 3, 4, 5, 6].map((n) => (
+                      <button
+                        key={n}
+                        onClick={() => setMagiusMarks(n)}
+                        className={`${btnBase} ${magiusMarks === n ? btnActive : btnInact}`}
+                      >
+                        {n}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-xs text-slate-400 mt-1">4個以上で天国モード濃厚</p>
                 </div>
-                <p className="text-xs text-slate-400 mt-1">4個以上で天国モード濃厚</p>
-              </div>
+              )}
             </div>
 
             <div>
@@ -193,10 +205,10 @@ export default function MultiCeilingTemplate({ machine }: Props) {
           </div>
         )}
 
-        {/* CZ・ボーナス履歴（モード推測対応機種のみ） */}
+        {/* スルー回数（モード推測対応機種のみ） */}
         {hasModeInference && (
           <div className="border-t border-slate-100 pt-4 space-y-4">
-            <div className="text-xs font-semibold text-slate-500">CZ・ボーナス履歴（モード推測用）</div>
+            <div className="text-xs font-semibold text-slate-500">スルー回数（モード推測用）</div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
@@ -212,23 +224,23 @@ export default function MultiCeilingTemplate({ machine }: Props) {
                     </button>
                   ))}
                 </div>
-                <p className="text-xs text-slate-400 mt-1">決戦ZONEに到達したがAT非当選</p>
+                <p className="text-xs text-slate-400 mt-1">{czSkipNote}</p>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-500 mb-1">決戦ボーナスAT非当選</label>
+                <label className="block text-xs font-medium text-slate-500 mb-1">{bonusSkipLabel}</label>
                 <div className="flex gap-1">
-                  {[0, 1, 2, 3].map((n) => (
+                  {[0, 1, 2, 3, 4, 5].map((n) => (
                     <button
                       key={n}
                       onClick={() => setKakusenSkipped(n)}
                       className={`${btnBase} ${kakusenSkipped === n ? btnActive : btnInact}`}
                     >
-                      {n === 3 ? "3+" : n}
+                      {n === 5 ? "5+" : n}
                     </button>
                   ))}
                 </div>
-                <p className="text-xs text-slate-400 mt-1">決戦ボーナス当選後にAT非当選</p>
+                <p className="text-xs text-slate-400 mt-1">{bonusSkipNote}</p>
               </div>
             </div>
           </div>

@@ -97,6 +97,16 @@ export interface ModeInferenceConfig {
   czFailTransition?: number[][];  // [fromMode][toMode] CZスルー後のモード遷移確率行列
   ceilingDistribution?: Record<string, number[]>; // モード別の天井周期振り分け（%、周期1〜N）
   notes?: string;
+  // UI customization（機種ごとの表示カスタマイズ）
+  hasMagiusMarks?: boolean;  // マギウスマーク入力を表示するか（true の場合のみ表示）
+  hasCyclePoints?: boolean;  // 周期・ポイント入力を表示するか（true の場合のみ表示）
+  cycleUnit?: string;        // 天井単位の表示名（未指定時は"周期"）
+  prevBonusLabel?: string;   // ボーナス後ラベル（未指定時は"通常（据え置き）"）
+  prevResetLabel?: string;   // リセット後ラベル（未指定時は"リセット"）
+  czSkipNote?: string;       // CZスルー回数の説明テキスト
+  bonusSkipLabel?: string;   // kakusenSkipped 入力ラベル（未指定時は"決戦ボーナスAT非当選"）
+  bonusSkipNote?: string;    // kakusenSkipped の説明テキスト
+  transitionNote?: string;   // モード遷移の注記テキスト（パネル下部に表示）
 }
 
 export interface MachineWithEV extends SlotMachine {
