@@ -42,17 +42,24 @@
     "bonusSkipNote": "REGはAT非扱い、CZスルーと同様の遷移が発生",
     "transitionNote": "CZ失敗・REG後の遷移率：モードA→ A:38%/B:60%/C:1%/D:1%、モードB→ B:57%/C:42%/D:1%、モードC→ C:68%/D:32%、モードD→ D:100%",
     "modes": [
-      { "id": "modeA", "label": "モードA", "maxCycles": 40, "baseRate": 62, "resetRate": 38 },
-      { "id": "modeB", "label": "モードB", "maxCycles": 30, "baseRate": 35, "resetRate": 60 },
-      { "id": "modeC", "label": "モードC", "maxCycles": 19, "baseRate": 2,  "resetRate": 1  },
-      { "id": "modeD", "label": "モードD", "maxCycles": 5,  "baseRate": 1,  "resetRate": 1  }
+      { "id": "modeA", "label": "モードA", "maxCycles": 6, "baseRate": 62, "resetRate": 38 },
+      { "id": "modeB", "label": "モードB", "maxCycles": 6, "baseRate": 35, "resetRate": 60 },
+      { "id": "modeC", "label": "モードC", "maxCycles": 4, "baseRate": 2,  "resetRate": 1  },
+      { "id": "modeD", "label": "モードD", "maxCycles": 1, "baseRate": 1,  "resetRate": 1  }
     ],
     "czFailTransition": [
       [0.38, 0.60, 0.01, 0.01],
       [0.00, 0.57, 0.42, 0.01],
       [0.00, 0.00, 0.68, 0.32],
       [0.00, 0.00, 0.00, 1.00]
-    ]
+    ],
+    "ceilingDistribution": {
+      "modeA": [ 6, 12, 12, 23, 16, 31],
+      "modeB": [23, 13, 29, 16, 12,  7],
+      "modeC": [22, 24, 26, 28,  0,  0],
+      "modeD": [100, 0,  0,  0,  0,  0]
+    },
+    "chanceMeiBucketSize": 5
   },
   "settings": {
     "1": { "bb": -1, "rb": -1, "at": 362, "machineRatio": 97.7 },

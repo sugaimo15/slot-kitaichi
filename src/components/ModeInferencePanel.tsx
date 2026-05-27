@@ -40,6 +40,16 @@ export default function ModeInferencePanel({
 }: Props) {
   const totalTransitions = cyclesSkipped + kakusenSkipped;
   const cycleUnit = config.cycleUnit ?? "周期";
+  const bucketSize = config.chanceMeiBucketSize ?? 1;
+
+  // Returns the display label for a cycle/bucket index (1-based)
+  const cycleLabel = (cycleNum: number): string =>
+    bucketSize > 1
+      ? `${(cycleNum - 1) * bucketSize + 1}〜${cycleNum * bucketSize}${cycleUnit}`
+      : `${cycleNum}${cycleUnit}目`;
+
+  // Returns display count of max ceiling for a mode
+  const displayMaxCycles = (maxCycles: number): number => maxCycles * bucketSize;
 
   // Build color map: use known colors first, fall back to index-based by maxCycles order
   const colorMap = useMemo(() => {
@@ -105,7 +115,7 @@ export default function ModeInferencePanel({
     const worstProb = probabilities[worstMode?.id] ?? 0;
 
     if (bestProb >= 50) return {
-      label: `${bestMode.label}濃厚！最短${bestMode.maxCycles}${cycleUnit}で天井確定`,
+      label: `${bestMode.label}濃厚！最短${displayMaxCycles(bestMode.maxCycles)}${cycleUnit}で天井確定`,
       color: "text-yellow-700", bg: "bg-yellow-50 border-yellow-200",
     };
     if (bestProb >= 20) return {
@@ -168,7 +178,7 @@ export default function ModeInferencePanel({
       .map((m) => {
         const dist = config.ceilingDistribution![m.id];
         if (!dist) return null;
-        return `${m.label} 1〜${m.maxCycles}${cycleUnit}(${dist.slice(0, m.maxCycles).join("/")}%)`;
+        return `${m.label} 1〜${displayMaxCycles(m.maxCycles)}${cycleUnit}(${dist.slice(0, m.maxCycles).join("/")}%)`;
       })
       .filter(Boolean)
       .join("、");
@@ -215,7 +225,7 @@ export default function ModeInferencePanel({
           {topMode && topProb > 0 && (
             <div className="text-xs text-slate-500 mt-0.5">
               最有力: <span className="font-medium">{topMode.label}</span>（{topProb}%）
-              ／ 期待上限 <span className="font-medium">{expectedMaxCycles}</span> {cycleUnit}以内
+              ／ 期待上限 <span className="font-medium">{Math.round(expectedMaxCycles * bucketSize)}</span> {cycleUnit}以内
             </div>
           )}
         </div>
@@ -231,7 +241,7 @@ export default function ModeInferencePanel({
             return (
               <div key={m.id} className="flex gap-2">
                 <span className={`font-medium w-14 shrink-0 ${textColor}`}>{m.label}</span>
-                <span>最大 {m.maxCycles} {cycleUnit}で天井</span>
+                <span>最大 {displayMaxCycles(m.maxCycles)} {cycleUnit}で天井</span>
               </div>
             );
           })}
@@ -282,10 +292,10 @@ export default function ModeInferencePanel({
       {/* 天井周期予測（ceilingDistribution がある場合のみ） */}
       {config.ceilingDistribution && (
         <div className="space-y-4">
-          <h4 className="text-xs font-medium text-slate-500">天井{cycleUnit}予測</h4>
+          <h4 className="text-xs font-medium text-slate-500">天井{cycleUnit}振り分け予測</h4>
           <p className="text-[11px] text-slate-400">
             モード別の天井{cycleUnit}振り分けと、モード推測確率で加重した合算予測を表示します。
-            {isReset && <span className="text-orange-500 ml-1">リセット後は最大3{cycleUnit}まで有効です。</span>}
+            {isReset && <span className="text-orange-500 ml-1">リセット後は最大{3 * bucketSize}{cycleUnit}まで有効です。</span>}
           </p>
 
           <div className="space-y-3">
@@ -310,13 +320,13 @@ export default function ModeInferencePanel({
                       </span>
                       <span className="text-xs text-slate-500">
                         モード確率 <span className="font-bold text-slate-700">{modeProb}%</span>
-                        <span className="ml-2">／ 最大{m.maxCycles}{cycleUnit}</span>
+                        <span className="ml-2">／ 最大{displayMaxCycles(m.maxCycles)}{cycleUnit}</span>
                       </span>
                     </div>
                     <div className="space-y-1.5">
                       {cycles.map(({ cycle, pct }) => (
                         <div key={cycle} className="flex items-center gap-2">
-                          <span className="text-xs text-slate-400 w-12 shrink-0 text-right">{cycle}{cycleUnit}目</span>
+                          <span className="text-xs text-slate-400 w-20 shrink-0 text-right">{cycleLabel(cycle)}</span>
                           <div className="flex-1 h-3 bg-slate-100 rounded-full overflow-hidden">
                             <div
                               className={`h-full rounded-full transition-all duration-300 ${pct > 0 ? colors.bar : ""}`}
@@ -339,7 +349,7 @@ export default function ModeInferencePanel({
               <div className="text-xs font-medium text-slate-500">合算予測（モード確率で加重）</div>
               {ceilingPrediction.map(({ cycle, prob }) => (
                 <div key={cycle} className="flex items-center gap-2">
-                  <span className="text-xs font-medium w-12 shrink-0 text-right text-slate-600">{cycle}{cycleUnit}目</span>
+                  <span className="text-xs font-medium w-20 shrink-0 text-right text-slate-600">{cycleLabel(cycle)}</span>
                   <div className="flex-1 h-4 bg-slate-100 rounded-full overflow-hidden">
                     <div
                       className="h-full rounded-full bg-indigo-400 transition-all duration-300"
