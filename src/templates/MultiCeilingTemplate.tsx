@@ -12,7 +12,7 @@ interface Props {
 
 export default function MultiCeilingTemplate({ machine }: Props) {
   const ceilings = machine.ceilings ?? [];
-  const maxCeiling = Math.max(...ceilings.map((c) => c.game), 1500);
+  const maxCeiling = ceilings.length > 0 ? Math.max(...ceilings.map((c) => c.game)) : 1500;
   const hasModeInference = !!machine.modeInference;
 
   // 共通
