@@ -306,7 +306,7 @@ export default function MultiCeilingTemplate({ machine }: Props) {
       </div>
 
       <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-xs text-amber-700 leading-relaxed">
-        ※ 周期天井・決戦ボーナススルー天井は当ツール未対応です。各天井の恩恵獲得枚数・区間内当選率は推定値を含むため、実際の値とは異なる場合があります。
+        ※ カウンター天井・スルー回数天井など一部の特殊天井は当ツール未対応です。各天井の恩恵獲得枚数・区間内当選率は推定値を含むため、実際の値とは異なる場合があります。
       </div>
 
       {/* ========== 内部モード推測結果 ========== */}
