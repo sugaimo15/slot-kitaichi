@@ -18,6 +18,7 @@ export interface SettingData {
   rb: number;       // RB確率分母（-1: なし）
   at: number;       // AT/ART確率分母（-1: なし）
   machineRatio: number;  // 機械割 %
+  czRate100g?: number;   // 100G以内CZ当選率（%、設定差判別用）
 }
 
 // 機種のゲームシステム種別。これでページのテンプレートが決まる
