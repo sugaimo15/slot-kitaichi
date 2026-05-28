@@ -15,8 +15,14 @@ export default function MultiCeilingTemplate({ machine }: Props) {
   const maxCeiling = ceilings.length > 0 ? Math.max(...ceilings.map((c) => c.game)) : 1500;
   const hasModeInference = !!machine.modeInference;
 
+  const hasSeparateGameInputs = ceilings.some((c) => c.gameInputLabel);
+
   // 共通
   const [currentGame, setCurrentGame] = useState(Math.floor(maxCeiling * 0.5));
+  // 天井ごとに個別ゲーム数を持つ場合（hasSeparateGameInputs === true のみ使用）
+  const [perCeilingGame, setPerCeilingGame] = useState<Record<string, number>>(
+    () => Object.fromEntries(ceilings.map((c) => [c.id, Math.floor(c.game * 0.5)]))
+  );
   const [lendCoins, setLendCoins]     = useState(46);
   const [isReset, setIsReset]         = useState(false);
 
@@ -54,10 +60,13 @@ export default function MultiCeilingTemplate({ machine }: Props) {
   const rows = useMemo(() => {
     return ceilings.map((c) => {
       const ceilingGame = isReset && c.resetGame ? c.resetGame : c.game;
-      const result = calcCeilingEV(currentGame, ceilingGame, c.bonus, c.base, c.atProb, exchangeRate);
-      return { def: c, ceilingGame, result };
+      const game = hasSeparateGameInputs
+        ? Math.min(perCeilingGame[c.id] ?? 0, ceilingGame)
+        : currentGame;
+      const result = calcCeilingEV(game, ceilingGame, c.bonus, c.base, c.atProb, exchangeRate);
+      return { def: c, ceilingGame, game, result };
     });
-  }, [ceilings, currentGame, exchangeRate, isReset]);
+  }, [ceilings, currentGame, perCeilingGame, hasSeparateGameInputs, exchangeRate, isReset]);
 
   const btnBase   = "flex-1 py-1.5 rounded-lg text-xs font-medium border transition-colors";
   const btnActive = "bg-slate-800 text-white border-slate-800";
@@ -114,31 +123,77 @@ export default function MultiCeilingTemplate({ machine }: Props) {
         </div>
 
         {/* ゲーム数 */}
-        <div>
-          <div className="flex justify-between items-end mb-2">
-            <label className="text-xs font-medium text-slate-500">現在のゲーム数（AT間）</label>
-            <div className="flex items-center gap-2">
-              <input
-                type="number"
-                min={0}
-                max={maxCeiling}
-                value={currentGame}
-                onChange={(e) => setCurrentGame(Math.min(Number(e.target.value), maxCeiling))}
-                className="w-24 border border-slate-200 rounded-lg px-3 py-1.5 text-sm text-right focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <span className="text-sm text-slate-500">G</span>
-            </div>
+        {hasSeparateGameInputs ? (
+          <div className="space-y-4">
+            {ceilings.map((c) => {
+              const maxG = isReset && c.resetGame ? c.resetGame : c.game;
+              const game = Math.min(perCeilingGame[c.id] ?? 0, maxG);
+              return (
+                <div key={c.id}>
+                  <div className="flex justify-between items-end mb-2">
+                    <label className="text-xs font-medium text-slate-500">
+                      {c.gameInputLabel}
+                      <span className="text-slate-400 ml-1">（{c.label}）</span>
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number"
+                        min={0}
+                        max={maxG}
+                        value={perCeilingGame[c.id] ?? 0}
+                        onChange={(e) =>
+                          setPerCeilingGame((prev) => ({
+                            ...prev,
+                            [c.id]: Math.min(Math.max(0, Number(e.target.value)), maxG),
+                          }))
+                        }
+                        className="w-24 border border-slate-200 rounded-lg px-3 py-1.5 text-sm text-right focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                      <span className="text-sm text-slate-500">G</span>
+                    </div>
+                  </div>
+                  <input
+                    type="range"
+                    min={0}
+                    max={maxG}
+                    step={10}
+                    value={game}
+                    onChange={(e) =>
+                      setPerCeilingGame((prev) => ({ ...prev, [c.id]: Number(e.target.value) }))
+                    }
+                    className="w-full accent-blue-600"
+                  />
+                </div>
+              );
+            })}
           </div>
-          <input
-            type="range"
-            min={0}
-            max={maxCeiling}
-            step={10}
-            value={currentGame}
-            onChange={(e) => setCurrentGame(Number(e.target.value))}
-            className="w-full accent-blue-600"
-          />
-        </div>
+        ) : (
+          <div>
+            <div className="flex justify-between items-end mb-2">
+              <label className="text-xs font-medium text-slate-500">現在のゲーム数（AT間）</label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  min={0}
+                  max={maxCeiling}
+                  value={currentGame}
+                  onChange={(e) => setCurrentGame(Math.min(Number(e.target.value), maxCeiling))}
+                  className="w-24 border border-slate-200 rounded-lg px-3 py-1.5 text-sm text-right focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <span className="text-sm text-slate-500">G</span>
+              </div>
+            </div>
+            <input
+              type="range"
+              min={0}
+              max={maxCeiling}
+              step={10}
+              value={currentGame}
+              onChange={(e) => setCurrentGame(Number(e.target.value))}
+              className="w-full accent-blue-600"
+            />
+          </div>
+        )}
 
         {/* 周期・ポイント（hasCyclePoints の機種のみ） */}
         {hasModeInference && hasCyclePoints && (
@@ -302,9 +357,9 @@ export default function MultiCeilingTemplate({ machine }: Props) {
       <div className="space-y-4">
         <h2 className="font-bold text-slate-800 px-1">天井別 残りゲーム数・期待値</h2>
         <div className="grid grid-cols-1 gap-4">
-          {rows.map(({ def, ceilingGame, result }) => {
-            const reached = currentGame >= ceilingGame;
-            const remainingGames = Math.max(0, ceilingGame - currentGame);
+          {rows.map(({ def, ceilingGame, game, result }) => {
+            const reached = game >= ceilingGame;
+            const remainingGames = Math.max(0, ceilingGame - game);
             return (
               <div key={def.id} className="bg-white rounded-xl border border-slate-200 p-5">
                 <div className="flex justify-between items-start gap-3 mb-3">
