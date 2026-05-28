@@ -311,8 +311,8 @@ export default function MultiCeilingTemplate({ machine }: Props) {
           </div>
         )}
 
-        {/* スルー回数（モード推測対応機種のみ） */}
-        {hasModeInference && (
+        {/* スルー回数（モード推測 + 遷移行列あり機種のみ） */}
+        {hasModeInference && modeConfig?.czFailTransition && (
           <div className="border-t border-slate-100 pt-4 space-y-4">
             <div className="text-xs font-semibold text-slate-500">スルー回数（モード推測用）</div>
 

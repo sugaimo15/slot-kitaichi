@@ -13,12 +13,18 @@ interface Props {
   currentPoints: number;
 }
 
-// Known valvrave2 IDs keep their original colors for backward compatibility
+// Known mode IDs → fixed colors
 const KNOWN_COLORS: Record<string, { bar: string; badge: string }> = {
-  tenjoku: { bar: "bg-yellow-400", badge: "bg-yellow-100 text-yellow-800 border-yellow-300" },
-  tsujoB:  { bar: "bg-blue-400",   badge: "bg-blue-100 text-blue-800 border-blue-300" },
-  tsujoC:  { bar: "bg-green-400",  badge: "bg-green-100 text-green-800 border-green-300" },
-  tsujoA:  { bar: "bg-slate-300",  badge: "bg-slate-100 text-slate-700 border-slate-300" },
+  tenjoku:     { bar: "bg-yellow-400", badge: "bg-yellow-100 text-yellow-800 border-yellow-300" },
+  tenjokuPrep: { bar: "bg-purple-400", badge: "bg-purple-100 text-purple-800 border-purple-300" },
+  chance:      { bar: "bg-orange-400", badge: "bg-orange-100 text-orange-800 border-orange-300" },
+  tsujoC:      { bar: "bg-green-400",  badge: "bg-green-100 text-green-800 border-green-300" },
+  tsujoB:      { bar: "bg-blue-400",   badge: "bg-blue-100 text-blue-800 border-blue-300" },
+  tsujoA:      { bar: "bg-slate-300",  badge: "bg-slate-100 text-slate-700 border-slate-300" },
+  modeA:       { bar: "bg-slate-300",  badge: "bg-slate-100 text-slate-700 border-slate-300" },
+  modeB:       { bar: "bg-blue-400",   badge: "bg-blue-100 text-blue-800 border-blue-300" },
+  modeC:       { bar: "bg-green-400",  badge: "bg-green-100 text-green-800 border-green-300" },
+  modeD:       { bar: "bg-yellow-400", badge: "bg-yellow-100 text-yellow-800 border-yellow-300" },
 };
 
 // Fallback palette: worst mode (highest maxCycles) → slate, best → yellow
@@ -120,14 +126,24 @@ export default function ModeInferencePanel({
     const bestProb = probabilities[bestMode.id] ?? 0;
     const worstProb = probabilities[worstMode.id] ?? 0;
 
-    if (bestProb >= 50) return {
-      label: `${bestMode.label}濃厚！最短${displayMaxCycles(bestMode.maxCycles)}${cycleUnit}で天井確定`,
-      color: "text-yellow-700", bg: "bg-yellow-50 border-yellow-200",
-    };
-    if (bestProb >= 20) return {
-      label: `${bestMode.label}の可能性あり。早期当選に期待`,
-      color: "text-blue-700", bg: "bg-blue-50 border-blue-200",
-    };
+    if (bestProb >= 50) {
+      const ceilingG = config.modeCeilingGames?.[bestMode.id];
+      return {
+        label: ceilingG !== undefined
+          ? `${bestMode.label}濃厚！CZ天井 ${ceilingG}G`
+          : `${bestMode.label}濃厚！最短${displayMaxCycles(bestMode.maxCycles)}${cycleUnit}で天井確定`,
+        color: "text-yellow-700", bg: "bg-yellow-50 border-yellow-200",
+      };
+    }
+    if (bestProb >= 20) {
+      const ceilingG = config.modeCeilingGames?.[bestMode.id];
+      return {
+        label: ceilingG !== undefined
+          ? `${bestMode.label}の可能性あり（CZ天井${ceilingG}G）`
+          : `${bestMode.label}の可能性あり。早期当選に期待`,
+        color: "text-blue-700", bg: "bg-blue-50 border-blue-200",
+      };
+    }
     if (totalTransitions >= 3 && worstProb < 70) return {
       label: "上位モードへの昇格が進んでいる可能性",
       color: "text-orange-700", bg: "bg-orange-50 border-orange-200",
@@ -231,7 +247,11 @@ export default function ModeInferencePanel({
           {topMode && topProb > 0 && (
             <div className="text-xs text-slate-500 mt-0.5">
               最有力: <span className="font-medium">{topMode.label}</span>（{topProb}%）
-              ／ 期待上限 <span className="font-medium">{Math.round(expectedMaxCycles * bucketSize)}</span> {cycleUnit}以内
+              ／{" "}
+              {config.modeCeilingGames?.[topMode.id] !== undefined
+                ? <>CZ天井 <span className="font-medium">{config.modeCeilingGames[topMode.id]}G</span></>
+                : <>期待上限 <span className="font-medium">{Math.round(expectedMaxCycles * bucketSize)}</span> {cycleUnit}以内</>
+              }
             </div>
           )}
         </div>
@@ -247,7 +267,11 @@ export default function ModeInferencePanel({
             return (
               <div key={m.id} className="flex gap-2">
                 <span className={`font-medium w-14 shrink-0 ${textColor}`}>{m.label}</span>
-                <span>最大 {displayMaxCycles(m.maxCycles)} {cycleUnit}で天井</span>
+                {config.modeCeilingGames?.[m.id] !== undefined ? (
+                  <span>CZ天井 {config.modeCeilingGames[m.id]}G</span>
+                ) : (
+                  <span>最大 {displayMaxCycles(m.maxCycles)} {cycleUnit}で天井</span>
+                )}
               </div>
             );
           })}

@@ -40,6 +40,26 @@
     "5": { "bb": -1, "rb": -1, "at": 291, "machineRatio": 110.3 },
     "6": { "bb": -1, "rb": -1, "at": 261, "machineRatio": 114.9 }
   },
+  "modeInference": {
+    "notes": "6種の内部モードによってCZへの当選しやすいゲーム数が異なります。モード初期振り分け率・移行率は未公開のため確率は参考値です。",
+    "modes": [
+      { "id": "tsujoA",      "label": "通常A",   "maxCycles": 6, "baseRate": 38, "resetRate": 35 },
+      { "id": "tsujoB",      "label": "通常B",   "maxCycles": 5, "baseRate": 30, "resetRate": 28 },
+      { "id": "tsujoC",      "label": "通常C",   "maxCycles": 4, "baseRate": 20, "resetRate": 22 },
+      { "id": "chance",      "label": "チャンス", "maxCycles": 3, "baseRate": 7,  "resetRate": 8  },
+      { "id": "tenjokuPrep", "label": "天国準備", "maxCycles": 2, "baseRate": 4,  "resetRate": 5  },
+      { "id": "tenjoku",     "label": "天国",     "maxCycles": 1, "baseRate": 1,  "resetRate": 2  }
+    ],
+    "modeCeilingGames": {
+      "tsujoA":      600,
+      "tsujoB":      600,
+      "tsujoC":      500,
+      "chance":      600,
+      "tenjokuPrep": 300,
+      "tenjoku":     100
+    },
+    "transitionNote": "設定変更後は特殊モードに移行しCZ天井が200Gに短縮（上部「リセット」ボタンで反映）。モード移行率・初期振り分けは未公開のため確率は参考値"
+  },
   "tags": ["AT", "その他", "スマスロ", "版権", "多天井"],
   "description": "クロスアルファのスマスロ版権機（2025年2月導入）。AT純増約4.0枚、ベース31G。CZ間天井600G（リセット後初回は200G）、AT間天井1200G。内部にモードA〜天国の6種が存在するが移行率は未公開。設定6の機械割は約115%。各種数値は推定を含みます。",
   "featured": true

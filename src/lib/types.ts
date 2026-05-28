@@ -109,6 +109,7 @@ export interface ModeInferenceConfig {
   bonusSkipNote?: string;    // kakusenSkipped の説明テキスト
   transitionNote?: string;   // モード遷移の注記テキスト（パネル下部に表示）
   chanceMeiBucketSize?: number; // チャンス目入力を使う場合のバケットサイズ（例: 5 → 1〜5, 6〜10, …）
+  modeCeilingGames?: Record<string, number>; // モード別CZ天井ゲーム数（周期概念のない機種用）
 }
 
 export interface MachineWithEV extends SlotMachine {
