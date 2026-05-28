@@ -18,6 +18,7 @@ export interface SettingData {
   rb: number;
   at: number;
   machineRatio: number;
+  czRate100g?: number;
 }
 
 export type MachineTemplate = "simple-at" | "multi-ceiling";

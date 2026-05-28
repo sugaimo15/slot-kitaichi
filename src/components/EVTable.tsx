@@ -7,6 +7,7 @@ interface Props {
 
 export default function EVTable({ machine }: Props) {
   const settings = [1, 2, 3, 4, 5, 6] as const;
+  const hasCzRate100g = machine.settings[1].czRate100g !== undefined;
 
   return (
     <div className="overflow-x-auto">
@@ -22,6 +23,9 @@ export default function EVTable({ machine }: Props) {
             )}
             {machine.settings[1].at > 0 && (
               <th className="px-3 py-2 text-center">AT確率</th>
+            )}
+            {hasCzRate100g && (
+              <th className="px-3 py-2 text-center">100G内CZ率</th>
             )}
             <th className="px-3 py-2 text-center">機械割</th>
             <th className="px-3 py-2 text-center rounded-tr-lg">期待値/時</th>
@@ -52,6 +56,15 @@ export default function EVTable({ machine }: Props) {
                 {d.at > 0 && (
                   <td className="px-3 py-2.5 text-center text-slate-600">{formatProb(d.at)}</td>
                 )}
+                {hasCzRate100g && (
+                  <td className={`px-3 py-2.5 text-center font-medium ${
+                    d.czRate100g && d.czRate100g >= 30 ? "text-red-500" :
+                    d.czRate100g && d.czRate100g >= 25 ? "text-orange-500" :
+                    "text-slate-600"
+                  }`}>
+                    {d.czRate100g !== undefined ? `${d.czRate100g.toFixed(2)}%` : "—"}
+                  </td>
+                )}
                 <td className={`px-3 py-2.5 text-center ${machineRatioColor(d.machineRatio)}`}>
                   {d.machineRatio.toFixed(1)}%
                 </td>
@@ -64,8 +77,13 @@ export default function EVTable({ machine }: Props) {
         </tbody>
       </table>
       <p className="text-xs text-slate-400 mt-2">
-        ※ 期待値は {machine.spinPerHour}回転/時・46枚貸し・3枚掛けで計算
+        ※ 期待値は {machine.spinPerHour}回転/時う46枚貸し・3枚掛けで計算
       </p>
+      {hasCzRate100g && (
+        <p className="text-xs text-slate-400 mt-1">
+          ※ 100G内CZ率は全モード平均の100G＋α以内CZ当選率（公式値）
+        </p>
+      )}
     </div>
   );
 }
