@@ -14,42 +14,40 @@ export type MakerName =
   | "その他";
 
 export interface SettingData {
-  bb: number;       // BB確率分母（-1: なし）
-  rb: number;       // RB確率分母（-1: なし）
-  at: number;       // AT/ART確率分母（-1: なし）
-  machineRatio: number;  // 機械割 %
+  bb: number;
+  rb: number;
+  at: number;
+  machineRatio: number;
 }
 
-// 機種のゲームシステム種別。これでページのテンプレートが決まる
 export type MachineTemplate = "simple-at" | "multi-ceiling";
 
 export interface ZoneData {
-  game: number;       // ゾーン中心ゲーム数
-  label?: string;     // 表示ラベル（省略時は「{game}G」）
-  hitRate?: number;   // ゾーン内AT当選率（%、例: 15.2）
-  note?: string;      // ゾーン種別注記（例: "強ゾーン", "高設定優遇"）
+  game: number;
+  label?: string;
+  hitRate?: number;
+  note?: string;
 }
 
 export interface HyenaData {
-  ceiling: number;        // 天井ゲーム数
-  ceilingBonus: number;   // 天井恩恵のネット獲得枚数
-  atAvgPayout: number;    // ATのネット平均獲得枚数（AT純増×平均継続G）
-  base: number;           // 通常時の50枚あたりゲーム数（ベース）
-  resetOnBonus: boolean;  // ボーナス後にゲーム数リセットされるか
-  zones?: ZoneData[];     // AT当選しやすいゾーン一覧
+  ceiling: number;
+  ceilingBonus: number;
+  atAvgPayout: number;
+  base: number;
+  resetOnBonus: boolean;
+  zones?: ZoneData[];
 }
 
-// 複数天井を持つ機種の、個々の天井定義
 export interface CeilingDef {
-  id: string;          // 機種内で一意（"at" / "cz" など）
-  label: string;       // "AT間天井" など表示名
-  game: number;        // 天井到達ゲーム数（通常時）
-  resetGame?: number;  // リセット（設定変更）時の天井ゲーム数
-  bonus: number;       // 天井到達時の恩恵・ネット期待獲得枚数
-  base: number;        // この区間のベース（50枚あたりG）
-  atProb: number;      // この区間中の当選確率分母（平均、推定可）
-  note?: string;       // 補足（恩恵内容など）
-  gameInputLabel?: string; // 個別ゲーム数入力のラベル（省略時は共通入力を使用）
+  id: string;
+  label: string;
+  game: number;
+  resetGame?: number;
+  bonus: number;
+  base: number;
+  atProb: number;
+  note?: string;
+  gameInputLabel?: string;
 }
 
 export interface SlotMachine {
@@ -57,14 +55,14 @@ export interface SlotMachine {
   slug: string;
   name: string;
   maker: MakerName;
-  releaseDate: string;   // "YYYY-MM"
+  releaseDate: string;
   type: SlotType;
-  template?: MachineTemplate; // 未指定時は "simple-at"
-  maxBonus: number;      // 最大ボーナス枚数
-  spinPerHour: number;   // 時間あたり回転数（デフォルト700）
-  hyena: HyenaData | null; // null = ハイエナ非対応（Aタイプ等）
-  ceilings?: CeilingDef[]; // multi-ceiling機種の複数天井
-  modeInference?: ModeInferenceConfig; // モード推測対応機種のみ
+  template?: MachineTemplate;
+  maxBonus: number;
+  spinPerHour: number;
+  hyena: HyenaData | null;
+  ceilings?: CeilingDef[];
+  modeInference?: ModeInferenceConfig;
   settings: {
     1: SettingData;
     2: SettingData;
@@ -81,46 +79,46 @@ export interface SlotMachine {
 export interface ModeInfo {
   id: string;
   label: string;
-  maxCycles: number;   // このモードでの最大周期数（これ以上スルーすると消去）
-  baseRate: number;    // AT後の基本移行率 %
-  resetRate: number;   // リセット後の基本移行率 %
+  maxCycles: number;
+  baseRate: number;
+  resetRate: number;
 }
 
 export interface ATTypeInfo {
   id: string;
   label: string;
-  tenjokuBoost?: number; // 天国モード率への加算ポイント
+  tenjokuBoost?: number;
 }
 
 export interface ModeInferenceConfig {
   modes: ModeInfo[];
   atTypes?: ATTypeInfo[];
-  czFailTransition?: number[][];  // [fromMode][toMode] CZスルー後のモード遷移確率行列
-  ceilingDistribution?: Record<string, number[]>; // モード別の天井周期振り分け（%、周期1〜N）
+  czFailTransition?: number[][];
+  ceilingDistribution?: Record<string, number[]>;
   notes?: string;
-  // UI customization（機種ごとの表示カスタマイズ）
-  hasMagiusMarks?: boolean;  // マギウスマーク入力を表示するか（true の場合のみ表示）
-  hasCyclePoints?: boolean;  // 周期・ポイント入力を表示するか（true の場合のみ表示）
-  cycleUnit?: string;        // 天井単位の表示名（未指定時は"周期"）
-  prevBonusLabel?: string;   // ボーナス後ラベル（未指定時は"通常（据え置き）"）
-  prevResetLabel?: string;   // リセット後ラベル（未指定時は"リセット"）
-  czSkipNote?: string;       // CZスルー回数の説明テキスト
-  bonusSkipLabel?: string;   // kakusenSkipped 入力ラベル（未指定時は"決戦ボーナスAT非当選"）
-  bonusSkipNote?: string;    // kakusenSkipped の説明テキスト
-  transitionNote?: string;   // モード遷移の注記テキスト（パネル下部に表示）
-  chanceMeiBucketSize?: number; // チャンス目入力を使う場合のバケットサイズ（例: 5 → 1〜5, 6〜10, …）
+  hasMagiusMarks?: boolean;
+  hasCyclePoints?: boolean;
+  cycleUnit?: string;
+  prevBonusLabel?: string;
+  prevResetLabel?: string;
+  czSkipNote?: string;
+  bonusSkipLabel?: string;
+  bonusSkipNote?: string;
+  transitionNote?: string;
+  chanceMeiBucketSize?: number;
+  modeCeilingGames?: Record<string, number>;
 }
 
 export interface MachineWithEV extends SlotMachine {
-  ev: Record<number, number>; // 設定→期待値（円/時間）、換金率4円/枚で計算
+  ev: Record<number, number>;
 }
 
 export interface HyenaResult {
   currentGame: number;
-  expectedSpins: number;      // 次のATまでの期待回転数
-  netCoinsPerSpin: number;    // 通常時の1G実質コイン消費（50/base）
-  hitProbability: number;     // 天井前にATを引く確率
-  ceilingProbability: number; // 天井に到達する確率
-  ev: number;                 // 期待値（円）
-  evPositiveGame: number | null; // EV+になるゲーム数（null=常にEV-）
+  expectedSpins: number;
+  netCoinsPerSpin: number;
+  hitProbability: number;
+  ceilingProbability: number;
+  ev: number;
+  evPositiveGame: number | null;
 }

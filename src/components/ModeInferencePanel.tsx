@@ -13,12 +13,18 @@ interface Props {
   currentPoints: number;
 }
 
-// Known valvrave2 IDs keep their original colors for backward compatibility
+// Known mode IDs → fixed colors
 const KNOWN_COLORS: Record<string, { bar: string; badge: string }> = {
-  tenjoku: { bar: "bg-yellow-400", badge: "bg-yellow-100 text-yellow-800 border-yellow-300" },
-  tsujoB:  { bar: "bg-blue-400",   badge: "bg-blue-100 text-blue-800 border-blue-300" },
-  tsujoC:  { bar: "bg-green-400",  badge: "bg-green-100 text-green-800 border-green-300" },
-  tsujoA:  { bar: "bg-slate-300",  badge: "bg-slate-100 text-slate-700 border-slate-300" },
+  tenjoku:     { bar: "bg-yellow-400", badge: "bg-yellow-100 text-yellow-800 border-yellow-300" },
+  tenjokuPrep: { bar: "bg-purple-400", badge: "bg-purple-100 text-purple-800 border-purple-300" },
+  chance:      { bar: "bg-orange-400", badge: "bg-orange-100 text-orange-800 border-orange-300" },
+  tsujoC:      { bar: "bg-green-400",  badge: "bg-green-100 text-green-800 border-green-300" },
+  tsujoB:      { bar: "bg-blue-400",   badge: "bg-blue-100 text-blue-800 border-blue-300" },
+  tsujoA:      { bar: "bg-slate-300",  badge: "bg-slate-100 text-slate-700 border-slate-300" },
+  modeA:       { bar: "bg-slate-300",  badge: "bg-slate-100 text-slate-700 border-slate-300" },
+  modeB:       { bar: "bg-blue-400",   badge: "bg-blue-100 text-blue-800 border-blue-300" },
+  modeC:       { bar: "bg-green-400",  badge: "bg-green-100 text-green-800 border-green-300" },
+  modeD:       { bar: "bg-yellow-400", badge: "bg-yellow-100 text-yellow-800 border-yellow-300" },
 };
 
 // Fallback palette: worst mode (highest maxCycles) → slate, best → yellow
@@ -42,16 +48,13 @@ export default function ModeInferencePanel({
   const cycleUnit = config.cycleUnit ?? "周期";
   const bucketSize = config.chanceMeiBucketSize ?? 1;
 
-  // Returns the display label for a cycle/bucket index (1-based)
   const cycleLabel = (cycleNum: number): string =>
     bucketSize > 1
       ? `${(cycleNum - 1) * bucketSize + 1}〜${cycleNum * bucketSize}${cycleUnit}`
       : `${cycleNum}${cycleUnit}目`;
 
-  // Returns display count of max ceiling for a mode
   const displayMaxCycles = (maxCycles: number): number => maxCycles * bucketSize;
 
-  // Build color map: use known colors first, fall back to index-based by maxCycles order
   const colorMap = useMemo(() => {
     const unknownModes = config.modes.filter((m) => !KNOWN_COLORS[m.id]);
     const sortedUnknown = [...unknownModes].sort((a, b) => b.maxCycles - a.maxCycles);
@@ -83,7 +86,6 @@ export default function ModeInferencePanel({
         state[tenjokuIdx] *= multiplier;
       }
     }
-    // 現在位置ではありえないモード（maxCycles < currentCycleNum）をゼロに
     config.modes.forEach((m, i) => {
       if (m.maxCycles < currentCycleNum) state[i] = 0;
     });
@@ -110,7 +112,6 @@ export default function ModeInferencePanel({
     return Math.round(weighted * 10) / 10;
   }, [probabilities, config.modes, currentCycleNum]);
 
-  // Generic recommendation based on best/worst mode by maxCycles
   const recommendation = useMemo(() => {
     const possible = config.modes.filter((m) => m.maxCycles >= currentCycleNum);
     const sortedByQuality = [...possible].sort((a, b) => a.maxCycles - b.maxCycles);
@@ -120,14 +121,24 @@ export default function ModeInferencePanel({
     const bestProb = probabilities[bestMode.id] ?? 0;
     const worstProb = probabilities[worstMode.id] ?? 0;
 
-    if (bestProb >= 50) return {
-      label: `${bestMode.label}濃厚！最短${displayMaxCycles(bestMode.maxCycles)}${cycleUnit}で天井確定`,
-      color: "text-yellow-700", bg: "bg-yellow-50 border-yellow-200",
-    };
-    if (bestProb >= 20) return {
-      label: `${bestMode.label}の可能性あり。早期当選に期待`,
-      color: "text-blue-700", bg: "bg-blue-50 border-blue-200",
-    };
+    if (bestProb >= 50) {
+      const ceilingG = config.modeCeilingGames?.[bestMode.id];
+      return {
+        label: ceilingG !== undefined
+          ? `${bestMode.label}濃厚！CZ天井 ${ceilingG}G`
+          : `${bestMode.label}濃厚！最短${displayMaxCycles(bestMode.maxCycles)}${cycleUnit}で天井確定`,
+        color: "text-yellow-700", bg: "bg-yellow-50 border-yellow-200",
+      };
+    }
+    if (bestProb >= 20) {
+      const ceilingG = config.modeCeilingGames?.[bestMode.id];
+      return {
+        label: ceilingG !== undefined
+          ? `${bestMode.label}の可能性あり（CZ天井${ceilingG}G）`
+          : `${bestMode.label}の可能性あり。早期当選に期待`,
+        color: "text-blue-700", bg: "bg-blue-50 border-blue-200",
+      };
+    }
     if (totalTransitions >= 3 && worstProb < 70) return {
       label: "上位モードへの昇格が進んでいる可能性",
       color: "text-orange-700", bg: "bg-orange-50 border-orange-200",
@@ -177,7 +188,6 @@ export default function ModeInferencePanel({
     return results.map((r) => ({ cycle: r.cycle, prob: Math.round((r.prob / total) * 100) }));
   }, [config, probabilities, currentCycleNum, isReset]);
 
-  // Generate ceiling distribution note dynamically from data
   const distNoteText = useMemo(() => {
     if (!config.ceilingDistribution) return null;
     return config.modes
@@ -196,7 +206,7 @@ export default function ModeInferencePanel({
         <h3 className="font-bold text-slate-800 mb-0.5">内部モード推測</h3>
         <p className="text-xs text-slate-400">
           {totalTransitions > 0
-            ? `昇格抽選合計 ${totalTransitions}回（CZスルー ${cyclesSkipped}回 ＋ ${config.bonusSkipLabel ?? "決戦ボーナス非当選"} ${kakusenSkipped}回）をもとに推測`
+            ? `昇格抽遡合計 ${totalTransitions}回（CZスルー ${cyclesSkipped}回 ＋ ${config.bonusSkipLabel ?? "決戦ボーナス非当選"} ${kakusenSkipped}回）をもとに推測`
             : config.notes}
         </p>
       </div>
@@ -231,7 +241,11 @@ export default function ModeInferencePanel({
           {topMode && topProb > 0 && (
             <div className="text-xs text-slate-500 mt-0.5">
               最有力: <span className="font-medium">{topMode.label}</span>（{topProb}%）
-              ／ 期待上限 <span className="font-medium">{Math.round(expectedMaxCycles * bucketSize)}</span> {cycleUnit}以内
+              ／{" "}
+              {config.modeCeilingGames?.[topMode.id] !== undefined
+                ? <>CZ天井 <span className="font-medium">{config.modeCeilingGames[topMode.id]}G</span></>
+                : <>期待上限 <span className="font-medium">{Math.round(expectedMaxCycles * bucketSize)}</span> {cycleUnit}以内</>
+              }
             </div>
           )}
         </div>
@@ -241,13 +255,19 @@ export default function ModeInferencePanel({
           {config.modes.map((m) => {
             const colors = colorMap[m.id] ?? FALLBACK_PALETTE[0];
             const textColor = colors.badge.includes("yellow") ? "text-yellow-700"
+              : colors.badge.includes("purple") ? "text-purple-700"
+              : colors.badge.includes("orange") ? "text-orange-700"
               : colors.badge.includes("blue") ? "text-blue-700"
               : colors.badge.includes("green") ? "text-green-700"
               : "text-slate-600";
             return (
               <div key={m.id} className="flex gap-2">
                 <span className={`font-medium w-14 shrink-0 ${textColor}`}>{m.label}</span>
-                <span>最大 {displayMaxCycles(m.maxCycles)} {cycleUnit}で天井</span>
+                {config.modeCeilingGames?.[m.id] !== undefined ? (
+                  <span>CZ天井 {config.modeCeilingGames[m.id]}G</span>
+                ) : (
+                  <span>最大 {displayMaxCycles(m.maxCycles)} {cycleUnit}で天井</span>
+                )}
               </div>
             );
           })}
@@ -278,7 +298,7 @@ export default function ModeInferencePanel({
                 <span className="text-xs text-slate-400 shrink-0">（{prob}%）</span>
                 <div className="flex-1 text-right">
                   {remaining === 0 ? (
-                    <span className="text-xs font-bold text-green-600">前兆当選圏内</span>
+                    <span className="text-xs font-bold text-green-600">前兆当選圈内</span>
                   ) : (
                     <span className="text-xs font-bold text-slate-700">
                       残り最大 <span className="text-indigo-600">{remaining}pt</span>
