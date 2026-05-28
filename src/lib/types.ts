@@ -49,6 +49,7 @@ export interface CeilingDef {
   base: number;        // この区間のベース（50枚あたりG）
   atProb: number;      // この区間中の当選確率分母（平均、推定可）
   note?: string;       // 補足（恩恵内容など）
+  gameInputLabel?: string; // 個別ゲーム数入力のラベル（省略時は共通入力を使用）
 }
 
 export interface SlotMachine {
